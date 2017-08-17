@@ -52,6 +52,7 @@
     <Compile Include="Component1.Designer.cs">
       <DependentUpon>Component1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Generator.cs" />
     <Compile Include="RpgEE.cs">
       <SubType>Form</SubType>
     </Compile>
