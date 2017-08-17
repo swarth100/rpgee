@@ -7,9 +7,9 @@ using System.Windows.Forms;
 
 namespace RPGEE
 {
-    class Generator
+    class Generator<T> where T : Control
     {
-        public static TableLayoutPanel generateTable(int rows, int cols)
+        public static TableLayoutPanel generateHomeTable(Form container, int rows, int cols)
         {
             TableLayoutPanel layoutTable = new TableLayoutPanel();
             layoutTable.ColumnCount = cols;
@@ -24,7 +24,17 @@ namespace RPGEE
             }
             layoutTable.Dock = DockStyle.Fill;
 
+            /** Adds the table to the form */
+            container.Controls.Add(layoutTable);
+
             return layoutTable;
+        }
+
+        public static T addObject(T obj, TableLayoutPanel table, int row, int col)
+        {
+            obj.Dock = DockStyle.Fill;
+            table.Controls.Add(obj, row, col);
+            return obj;
         }
     }
 }
