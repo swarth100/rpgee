@@ -13,10 +13,23 @@ namespace RPGEE
 {
     public partial class RpgEE : Form
     {
+        /* List of enums for possible screens in RpgEE */
+        public enum Layers
+        {
+            Login,
+            Home,
+            Map,
+            Players,
+            Areas,
+            Game,
+            Sprites,
+            Custom
+        }
+
         /** Login Screen UI Components
          *  Initialised within RpgEE() Constructor
          */
-        private readonly TableLayoutPanel loginTable;
+        private static TableLayoutPanel loginTable;
         private readonly Label loginLbl;
         private readonly TextBox usernameTxt;
         private readonly TextBox passwordTxt;
@@ -26,7 +39,7 @@ namespace RPGEE
         /** Home Screen UI Components
          *  Initialised within RpgEE() Constructor
          */
-        private readonly TableLayoutPanel homeTable;
+        private static TableLayoutPanel homeTable;
         private readonly Button mapBtn;
         private readonly Button playersBtn;
         private readonly Button areaBtn;
@@ -36,10 +49,13 @@ namespace RPGEE
 
         /* General structures ad data */
         private Thread connectionThread;
+        private static TableLayoutPanel currentScreen;
+        private static Form RpgEEForm;
 
         public RpgEE()
         {
             this.Text = "RpgEE";
+            RpgEEForm = this;
 
             /** Generates a table to dock login Components
              * Table layout:
@@ -57,8 +73,9 @@ namespace RPGEE
              * +-----+--------------------+-----+
              */
 
+            /* Login table must originally be set visible */
             loginTable = Generator<TableLayoutPanel>.generateLoginTable(this, 8, 3);
-            loginTable.Visible = true;
+            RpgEE.showScreen(Layers.Login);
 
             loginLbl = Generator<Label>.addObject(new Label() { Text = "Log Into EE", TextAlign = ContentAlignment.MiddleCenter }, loginTable, 1, 1);
             usernameTxt = Generator<TextBox>.addObject(new TextBox() { Text = "username" }, loginTable, 1, 3);
@@ -108,6 +125,49 @@ namespace RPGEE
             connectionThread = new Thread(BackgroundThread.runConnectionThread);
             connectionThread.IsBackground = true;
             connectionThread.Start();
+        }
+
+        /** The following structure was generously inspired by:
+         * https://stackoverflow.com/questions/10775367/cross-thread-operation-not-valid-control-textbox1-accessed-from-a-thread-othe */
+
+        delegate void LayerUpdateCallback(Form form, TableLayoutPanel panel, bool status);
+
+        public static void UpdateLayer(Form form, TableLayoutPanel panel, bool status)
+        {
+            /** InvokeRequired required compares the thread ID of the 
+             * calling thread to the thread ID of the creating thread. 
+             * If these threads are different, it returns true. */
+            if (panel.InvokeRequired)
+            {
+                LayerUpdateCallback cb = new LayerUpdateCallback(UpdateLayer);
+                form.Invoke(cb, new object[] { form, panel, status });
+            }
+            else
+            {
+                /* Changing a panel's visibility status must also update the currentScreen panel */
+                panel.Visible = status;
+                currentScreen = panel;
+            }
+        }
+
+        /** Screen layer handler
+         * Switches the viewed screen according to the given selection */
+        public static void showScreen(Layers newScreen)
+        {
+            if (currentScreen != null)
+            {
+                RpgEE.UpdateLayer(RpgEEForm, currentScreen, false);
+            }
+
+            switch(newScreen)
+            {
+                case Layers.Login:
+                    RpgEE.UpdateLayer(RpgEEForm, loginTable, true);
+                    break;
+                case Layers.Home:
+                    RpgEE.UpdateLayer(RpgEEForm, homeTable, true);
+                    break;
+            }
         }
     }
 }
