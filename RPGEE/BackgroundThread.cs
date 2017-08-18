@@ -30,9 +30,6 @@ namespace RPGEE
                 email = ConnectionDetails.username;
                 password = ConnectionDetails.password;
                 roomid = ConnectionDetails.roomID;
-
-                /* Debug */
-                Console.WriteLine(ConnectionDetails.username);
             }
             PlayerIO.QuickConnect.SimpleConnect("everybody-edits-su9rn58o40itdbnw69plyw", email, password, null,
             delegate (Client client)
@@ -52,7 +49,8 @@ namespace RPGEE
                                 con.Send("init2");
                                 break;
                             case "init2":
-                                Console.WriteLine("Connected to the room.");
+                                /* Force UI update to render home screen */
+                                RpgEE.showScreen(RpgEE.Layers.Home);
                                 break;
                             case "add":
                                 if (!Players.ContainsKey(m.GetInt(0)))
@@ -67,6 +65,11 @@ namespace RPGEE
                                 Players.Remove(m.GetInt(0));
                                 break;
                             case "m":
+                                /* Movement */
+                                break;
+                            case "say":
+                                /* Messages */
+                                Console.WriteLine(m);
                                 break;
                         }
                     };
