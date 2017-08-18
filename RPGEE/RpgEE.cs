@@ -97,9 +97,12 @@ namespace RPGEE
          * When fired sets the appropriate Connection Details and fires the Connection bakcground thread */
         void loginBtn_Click(object sender, EventArgs e)
         {
-            ConnectionDetails.username = usernameTxt.Text;
-            ConnectionDetails.password = passwordTxt.Text;
-            ConnectionDetails.roomID = roomIDTxt.Text;
+            lock (ConnectionDetails._lock)
+            {
+                ConnectionDetails.username = usernameTxt.Text;
+                ConnectionDetails.password = passwordTxt.Text;
+                ConnectionDetails.roomID = roomIDTxt.Text;
+            }
             
             /* Spawn connection thread, set it to background and run it */
             connectionThread = new Thread(BackgroundThread.runConnectionThread);
