@@ -69,6 +69,9 @@
   <ItemGroup>
     <Compile Include="BackgroundThread.cs" />
     <Compile Include="ConnectionDetails.cs" />
+    <Compile Include="DraggablePictureBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Generator.cs" />
     <Compile Include="Map.cs" />
     <Compile Include="Player.cs" />

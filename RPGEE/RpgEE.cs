@@ -52,6 +52,9 @@ namespace RPGEE
          */
         private static TableLayoutPanel mapTable;
         private readonly PictureBox mapPct;
+        private readonly Button backBtn;
+        private readonly Button sideBtn;
+        private readonly Button topBtn;
 
         /* General structures ad data */
         private Thread connectionThread;
@@ -119,10 +122,26 @@ namespace RPGEE
             spritesBtn = Generator<Button>.addObject(new Button() { Text = "Sprites" }, homeTable, 1, 1);
             optionsBtn = Generator<Button>.addObject(new Button() { Text = "Options" }, homeTable, 2, 1);
 
-            mapTable = Generator<TableLayoutPanel>.generateHomeTable(this, 2, 3);
-            mapPct = Generator<PictureBox>.addObject(new DraggablePictureBox(), mapTable, 2, 1);
-            mapPct.Image = new Bitmap(mapPct.Width*2, mapPct.Height*2);
-            mapTable.SuspendLayout();
+            /** Generates a table to dock map Button Components
+             * Table layout:
+             * 
+             * +-----+---------------------+
+             * |     |                     |
+             * +-----+---------------------+
+             * |     |                     |
+             * |     |                     |
+             * |     |                     | 
+             * +-----+---------------------+ 
+             */
+            mapTable = Generator<TableLayoutPanel>.generateGeneralTable(this);
+            mapPct = Generator<PictureBox>.addDraggablePictureBox(new DraggablePictureBox(), mapTable, 1, 1);
+
+            /* Temporary button placeholders */
+            backBtn = Generator<Button>.addObject(new Button() { Text = "Back" }, mapTable, 0, 0);
+            topBtn = Generator<Button>.addObject(new Button() { Text = "RpgEE" }, mapTable, 1, 0);
+            sideBtn = Generator<Button>.addObject(new Button() { Text = "SideNav" }, mapTable, 0, 1);
+
+            /* Debug */
             RpgEE.showScreen(Layers.Home);
         }
 
