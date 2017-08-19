@@ -70,6 +70,7 @@
     <Compile Include="BackgroundThread.cs" />
     <Compile Include="ConnectionDetails.cs" />
     <Compile Include="Generator.cs" />
+    <Compile Include="Map.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="RpgEE.cs">
       <SubType>Form</SubType>
@@ -87,6 +88,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -112,6 +114,15 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BLOCKS_back.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BLOCKS_deco.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BLOCKS_front.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
