@@ -120,8 +120,9 @@ namespace RPGEE
             optionsBtn = Generator<Button>.addObject(new Button() { Text = "Options" }, homeTable, 2, 1);
 
             mapTable = Generator<TableLayoutPanel>.generateHomeTable(this, 2, 3);
-            mapPct = Generator<PictureBox>.addObject(new PictureBox(), mapTable, 2, 1);
-            mapPct.Image = new Bitmap(mapPct.Width, mapPct.Height);
+            mapPct = Generator<PictureBox>.addObject(new DraggablePictureBox(), mapTable, 2, 1);
+            mapPct.Image = new Bitmap(mapPct.Width*2, mapPct.Height*2);
+            mapTable.SuspendLayout();
             RpgEE.showScreen(Layers.Home);
         }
 
