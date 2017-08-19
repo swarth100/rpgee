@@ -47,6 +47,15 @@ namespace RPGEE
         private readonly Button spritesBtn;
         private readonly Button optionsBtn;
 
+        /** Map Screen UI Components
+         *  Initialised within RpgEE() Constructor
+         */
+        private static TableLayoutPanel mapTable;
+        private readonly PictureBox mapPct;
+        private readonly Button backBtn;
+        private readonly Button sideBtn;
+        private readonly Button topBtn;
+
         /* General structures ad data */
         private Thread connectionThread;
         private static TableLayoutPanel currentScreen;
@@ -55,6 +64,7 @@ namespace RPGEE
         public RpgEE()
         {
             this.Text = "RpgEE";
+            this.Size = new Size(600, 400);
             RpgEEForm = this;
 
             /** Generates a table to dock login Components
@@ -75,7 +85,7 @@ namespace RPGEE
 
             /* Login table must originally be set visible */
             loginTable = Generator<TableLayoutPanel>.generateLoginTable(this, 8, 3);
-            RpgEE.showScreen(Layers.Login);
+            // RpgEE.showScreen(Layers.Login);
 
             loginLbl = Generator<Label>.addObject(new Label() { Text = "Log Into EE", TextAlign = ContentAlignment.MiddleCenter }, loginTable, 1, 1);
             usernameTxt = Generator<TextBox>.addObject(new TextBox() { Text = "username" }, loginTable, 1, 3);
@@ -102,13 +112,40 @@ namespace RPGEE
 
             homeTable = Generator<TableLayoutPanel>.generateHomeTable(this, 2, 3);
 
+            /* Map button */
             mapBtn = Generator<Button>.addObject(new Button() { Text = "Map" }, homeTable, 0, 0);
+            mapBtn.Click += new System.EventHandler(this.mapBtn_Click);
+
             playersBtn = Generator<Button>.addObject(new Button() { Text = "Players" }, homeTable, 1, 0);
             areaBtn = Generator<Button>.addObject(new Button() { Text = "Area" }, homeTable, 2, 0);
             rulesBtn = Generator<Button>.addObject(new Button() { Text = "Rules" }, homeTable, 0, 1);
             spritesBtn = Generator<Button>.addObject(new Button() { Text = "Sprites" }, homeTable, 1, 1);
             optionsBtn = Generator<Button>.addObject(new Button() { Text = "Options" }, homeTable, 2, 1);
+
+            /** Generates a table to dock map Button Components
+             * Table layout:
+             * 
+             * +-----+---------------------+
+             * |     |                     |
+             * +-----+---------------------+
+             * |     |                     |
+             * |     |                     |
+             * |     |                     | 
+             * +-----+---------------------+ 
+             */
+            mapTable = Generator<TableLayoutPanel>.generateGeneralTable(this);
+            mapPct = Generator<PictureBox>.addDraggablePictureBox(new DraggablePictureBox(), mapTable, 1, 1);
+
+            /* Temporary button placeholders */
+            backBtn = Generator<Button>.addObject(new Button() { Text = "Back" }, mapTable, 0, 0);
+            topBtn = Generator<Button>.addObject(new Button() { Text = "RpgEE" }, mapTable, 1, 0);
+            sideBtn = Generator<Button>.addObject(new Button() { Text = "SideNav" }, mapTable, 0, 1);
+
+            /* Debug */
+            RpgEE.showScreen(Layers.Home);
         }
+
+        #region btnClicks
 
         /** Login btn click handler
          * When fired sets the appropriate Connection Details and fires the Connection bakcground thread */
@@ -126,6 +163,18 @@ namespace RPGEE
             connectionThread.IsBackground = true;
             connectionThread.Start();
         }
+
+        /** Map btn click handler
+         * When fired changes the layout to the map appropriate one */
+        void mapBtn_Click(object sender, EventArgs e)
+        {
+            RpgEE.showScreen(Layers.Map);
+            Map.loadMap(mapPct);
+        }
+
+        #endregion
+
+        #region layerUpdates
 
         /** The following structure was generously inspired by:
          * https://stackoverflow.com/questions/10775367/cross-thread-operation-not-valid-control-textbox1-accessed-from-a-thread-othe */
@@ -167,7 +216,11 @@ namespace RPGEE
                 case Layers.Home:
                     RpgEE.UpdateLayer(RpgEEForm, homeTable, true);
                     break;
+                case Layers.Map:
+                    RpgEE.UpdateLayer(RpgEEForm, mapTable, true);
+                    break;
             }
         }
+        #endregion
     }
 }
