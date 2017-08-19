@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,8 @@ namespace RPGEE
 {
     class Generator<T> where T : Control
     {
+
+        #region privateTableGenerators
         /** Private layout table generator.
          * Receives a row and column formatter functions, a containner form and numbers for rows and columns.
          * Creates a new TableLayoutPanel Object initialised accordingly.
@@ -93,6 +96,44 @@ namespace RPGEE
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, value));
         }
 
+        /** Private helper function for a general component's table column generation
+         *  */
+        private static void generateGeneralTableHelperCols(TableLayoutPanel layout, int i)
+        {
+            System.Single value;
+            switch (i)
+            {
+                case 0:
+                    value = 30F;
+                    break;
+                default:
+                    value = 70F;
+                    break;
+            }
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, value));
+        }
+
+        /** Private helper function for a general component's table row generation
+         *  */
+        private static void generateGeneralTableHelperRows(TableLayoutPanel layout, int i)
+        {
+            System.Single value;
+            switch (i)
+            {
+                case 0:
+                    value = 10F;
+                    break;
+                default:
+                    value = 90F;
+                    break;
+            }
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, value));
+        }
+
+        #endregion
+
+        #region publicTableGenerators
+
         /** Public function to generate the Home Table */
         public static TableLayoutPanel generateHomeTable(Form container, int rows, int cols)
         {
@@ -105,6 +146,14 @@ namespace RPGEE
             return generateTable(generateLoginTableHelperRows, generateLoginTableHelperCols, container, rows, cols);
         }
 
+        /** Public function to generate a General component Table */
+        public static TableLayoutPanel generateGeneralTable(Form container)
+        {
+            return generateTable(generateGeneralTableHelperRows, generateGeneralTableHelperCols, container, 2, 2);
+        }
+
+        #endregion
+
         /** Public function to add and dock a new Object to a given TableLayoutPanel within a form
          * The newly created object must be assigned the right row and column indexes
          *  */
@@ -112,6 +161,29 @@ namespace RPGEE
         {
             obj.Dock = DockStyle.Fill;
             table.Controls.Add(obj, row, col);
+            return obj;
+        }
+
+        /** Public function to add and dock a DraggablePictureBox given a TableLayoutPanel within a form
+         * The newly created object must be assigned the right row and column indexes
+         *  */
+        public static PictureBox addDraggablePictureBox(DraggablePictureBox obj, TableLayoutPanel table, int row, int col)
+        {
+            /* Generates a new sub level TableLayoutPanel */
+            TableLayoutPanel mapHelper = Generator<TableLayoutPanel>.addObject(new TableLayoutPanel() , table, 2, 1);
+
+            /* The table layout panel is just a placeholder, as it enforces no layout */
+            mapHelper.Visible = true;
+            mapHelper.SuspendLayout();
+
+            /* The DraggablePictureBox is added to the sub-level layout panel with no enforced docking */
+            Generator<PictureBox>.addObject(obj, mapHelper, 0, 0);
+            obj.Dock = DockStyle.None;
+
+            /* Temporary enforcement of large size */
+            obj.Image = new Bitmap(2000, 2000);
+            obj.Size = new Size(2000, 2000);
+
             return obj;
         }
     }
