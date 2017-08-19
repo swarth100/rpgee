@@ -51,13 +51,14 @@ namespace RPGEE
          *  Initialised within RpgEE() Constructor
          */
         private static TableLayoutPanel mapTable;
-        private readonly PictureBox mapPct;
+        public static PictureBox mapPct;
         private readonly Button backBtn;
         private readonly Button sideBtn;
         private readonly Button topBtn;
 
-        /* General structures ad data */
+        /* General structures and data */
         private Thread connectionThread;
+        private Thread computationThread;
         private static TableLayoutPanel currentScreen;
         private static Form RpgEEForm;
 
@@ -85,7 +86,7 @@ namespace RPGEE
 
             /* Login table must originally be set visible */
             loginTable = Generator<TableLayoutPanel>.generateLoginTable(this, 8, 3);
-            // RpgEE.showScreen(Layers.Login);
+            RpgEE.showScreen(Layers.Login);
 
             loginLbl = Generator<Label>.addObject(new Label() { Text = "Log Into EE", TextAlign = ContentAlignment.MiddleCenter }, loginTable, 1, 1);
             usernameTxt = Generator<TextBox>.addObject(new TextBox() { Text = "username" }, loginTable, 1, 3);
@@ -141,8 +142,13 @@ namespace RPGEE
             topBtn = Generator<Button>.addObject(new Button() { Text = "RpgEE" }, mapTable, 1, 0);
             sideBtn = Generator<Button>.addObject(new Button() { Text = "SideNav" }, mapTable, 0, 1);
 
+            /* Spawn computations thread, set it to background and run it */
+            computationThread = new Thread(BackgroundThread.runComputationsThread);
+            computationThread.IsBackground = true;
+            computationThread.Start();
+
             /* Debug */
-            RpgEE.showScreen(Layers.Home);
+            //RpgEE.showScreen(Layers.Home);
         }
 
         #region btnClicks
@@ -169,7 +175,6 @@ namespace RPGEE
         void mapBtn_Click(object sender, EventArgs e)
         {
             RpgEE.showScreen(Layers.Map);
-            Map.loadMap(mapPct);
         }
 
         #endregion
