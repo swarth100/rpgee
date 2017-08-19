@@ -19,17 +19,19 @@ namespace RPGEE
                 // Create image.
                 Image newImage = Properties.Resources.BLOCKS_front;
 
-                for (int i = 0; i < 20; i++)
+                int square = 20;
+
+                for (int i = 0; i < square; i++)
                 {
-                    for (int j = 0; j < 20; j++)
+                    for (int j = 0; j < square; j++)
                     {
 
                         // Create rectangle for source image.
-                        Rectangle srcRect = new Rectangle((i*20 + j)*16, 0, 16, 16);
+                        Rectangle srcRect = new Rectangle((i*square + j)*16, 0, 16, 16);
                         GraphicsUnit units = GraphicsUnit.Pixel;
 
                         // Create rectangle for displaying image.
-                        Rectangle destRect = new Rectangle(i*16, j*16, 16, 16);
+                        Rectangle destRect = new Rectangle(j*16, i*16, 16, 16);
 
                         // Draw image to screen.
                         g.DrawImage(newImage, destRect, srcRect, units);
