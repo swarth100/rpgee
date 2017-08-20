@@ -52,6 +52,7 @@ namespace RPGEE
          */
         private static TableLayoutPanel mapTable;
         public static PictureBox mapPct;
+        private static Label loadLbl;
         private readonly Button backBtn;
         private readonly Button sideBtn;
         private readonly Button topBtn;
@@ -135,7 +136,9 @@ namespace RPGEE
              * +-----+---------------------+ 
              */
             mapTable = Generator<TableLayoutPanel>.generateGeneralTable(this);
-            mapPct = Generator<PictureBox>.addDraggablePictureBox(new DraggablePictureBox(), mapTable, 1, 1);
+            mapPct = new DraggablePictureBox();
+            // mapPct = Generator<PictureBox>.addDraggablePictureBox(new DraggablePictureBox(), mapTable, 1, 1);
+            loadLbl = Generator<Label>.addObject(new Label() { Text = "Loading ...", TextAlign = ContentAlignment.MiddleCenter }, mapTable, 1, 1);
 
             /* Temporary button placeholders */
             backBtn = Generator<Button>.addObject(new Button() { Text = "Back" }, mapTable, 0, 0);
@@ -148,7 +151,7 @@ namespace RPGEE
             computationThread.Start();
 
             /* Debug */
-            //RpgEE.showScreen(Layers.Home);
+            // RpgEE.showScreen(Layers.Home);
         }
 
         #region btnClicks
@@ -186,7 +189,7 @@ namespace RPGEE
 
         delegate void LayerUpdateCallback(Form form, TableLayoutPanel panel, bool status);
 
-        public static void UpdateLayer(Form form, TableLayoutPanel panel, bool status)
+        private static void UpdateLayer(Form form, TableLayoutPanel panel, bool status)
         {
             /** InvokeRequired required compares the thread ID of the 
              * calling thread to the thread ID of the creating thread. 
@@ -226,6 +229,35 @@ namespace RPGEE
                     break;
             }
         }
+        #endregion
+
+        #region mapUpdates
+
+        delegate void SpawnMapCallback(Form form, TableLayoutPanel panel);
+
+        private static void SpawnMap(Form form, TableLayoutPanel panel)
+        {
+            /** InvokeRequired required compares the thread ID of the 
+             * calling thread to the thread ID of the creating thread. 
+             * If these threads are different, it returns true. */
+            if (panel.InvokeRequired)
+            {
+                SpawnMapCallback cb = new SpawnMapCallback(SpawnMap);
+                form.Invoke(cb, new object[] { form, panel });
+            }
+            else
+            {
+                /* Substitute the load placeholder label with the new image */
+                panel.Controls.Remove(loadLbl);
+                Generator<PictureBox>.addDraggablePictureBox((DraggablePictureBox)mapPct, panel, 1, 1);
+            }
+        }
+
+        public static void spawnMap()
+        {
+            RpgEE.SpawnMap(RpgEEForm, mapTable);
+        }
+
         #endregion
     }
 }
