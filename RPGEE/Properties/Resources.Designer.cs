@@ -89,5 +89,15 @@ namespace RPGEE.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap BLOCKS_misc {
+            get {
+                object obj = ResourceManager.GetObject("BLOCKS_misc", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }

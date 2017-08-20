@@ -42,17 +42,29 @@ namespace RPGEE
         /* RoomData object */
         public static uint[,,] roomData;
         public static Object _roomDataLock = new Object();
+        public static int width = 0;
+        public static int height = 0;
 
         /* Class fields */
         private static string email = "";
         private static string password = "";
         private static string roomid = "";
 
+        #region ComputationalThread
+
+        /** Computational thread main function.
+         * The computational thread is meant to perform a number of heavy weight operations leaving both the UI and
+         * the connections thread free to handle their other tasks.
+         * All computational events must be packaged into an ActionEvent and added to the activityQueue.
+         * The computational thread keeps listening on the queue, popping out ActionEvents as they show up. */
         public static void runComputationsThread()
         {
             ActionEvent activity;
+
+            /* Main computational thread loop */
             while (true)
             {
+                /* Check for new ActionEvents, if any present Dequeue them */
                 lock (_activityLock)
                 {
                     if (activityQueue.Count != 0)
@@ -65,6 +77,7 @@ namespace RPGEE
                     }
                 }
 
+                /* When a new activity is detected, detect the relevant action */
                 if (activity != null)
                 {
                     switch (activity.action)
@@ -72,6 +85,9 @@ namespace RPGEE
                         case Actions.None:
                             break;
                         case Actions.InitParse:
+                            /** InitParse is the action meant to parse the world data dumped by an "init" even when joining a world.
+                             * Successful InitParse completion will trigger the rendering of the main Map image. */
+
                             /* Cast data back to message type */
                             Message e = (Message)activity.data;
 
@@ -81,17 +97,17 @@ namespace RPGEE
                             lock (_roomDataLock)
                             {
                                 roomData = new uint[2, e.GetInt(18), e.GetInt(19)];
+
+                                /* Initialise width end height fields */
+                                width = e.GetInt(18);
+                                height = e.GetInt(19);
+
+                                /* Parse the room's DataCHunks */
                                 DataChunk[] chunks = InitParse.Parse(e);
                                 foreach (var chunk in chunks)
                                     foreach (var pos in chunk.Locations)
                                         roomData[chunk.Layer, pos.X, pos.Y] = chunk.Type;
                             }
-
-                            /*
-                            Console.WriteLine(roomData[0, 0, 0]);
-                            Console.WriteLine(roomData[1, 0, 0]);
-                            Console.WriteLine(roomData[0, 1, 1]);
-                            */
 
                             /* Force initial map async rendering */
                             Map.loadMap(RpgEE.mapPct);
@@ -102,9 +118,14 @@ namespace RPGEE
             }
         }
 
-        /** Most of the following code was kindly uploaded by CAPASHA on:
-         * https://pastebin.com/maiaKcRD */
+        #endregion
 
+        #region ConnectionThread
+
+        /** Connection thread main function.
+         * The connection thread is means to handle all msg events sent by the PlayerIO server.
+         * It also issues all messages that must be sent by the client.
+         * It is a priority not to slow down this thread in order to not lose packets. */
         public static void runConnectionThread()
         {
             lock (ConnectionDetails._lock)
@@ -113,24 +134,39 @@ namespace RPGEE
                 password = ConnectionDetails.password;
                 roomid = ConnectionDetails.roomID;
             }
+
+            /** Most of the following code was kindly uploaded by CAPASHA on:
+             * https://pastebin.com/maiaKcRD */
+
+            #region playerIOConnection
+
+            /* Connect to the EverybodyEdits server */
             PlayerIO.QuickConnect.SimpleConnect("everybody-edits-su9rn58o40itdbnw69plyw", email, password, null,
             delegate (Client client)
             {
                 Console.WriteLine("Logged in!");
+                /* Upon successful connection, attempt to join the designated room */
                 client.Multiplayer.CreateJoinRoom(roomid, "Everybodyedits" + client.BigDB.Load("config", "config")["version"], true, null, null,
                 delegate (Connection con)
                 {
+                    /* Send the "init" message to join the room and subscribe to the room's messages */
                     con.Send("init");
                     con.OnMessage += delegate (object sender, PlayerIOClient.Message m)
                     {
+                        /* EEPhysics library handler initialisation. It pre-parses all messages sent by the server to the client */
                         Physicsworld.HandleMessage(m);
                         switch (m.Type)
                         {
                             case "init":
+                                /** "init" messages are sent upon a successful room join.
+                                 * They are sent along with the entire room data. */
+
                                 Players.Add(m.GetInt(5), new Player(m.GetInt(5), m.GetString(13)));
+
+                                /* Send an "init2" message to finalise the join */
                                 con.Send("init2");
 
-                                /* Add initParse event to computationsThread */
+                                /* Delegate initParse event to computationsThread */
                                 lock (_activityLock)
                                 {
                                     activityQueue.Enqueue(new ActionEvent(Actions.InitParse, m));
@@ -138,10 +174,14 @@ namespace RPGEE
 
                                 break;
                             case "init2":
+                                /** Once the "init2" message is received, our bot is ready to be fully operational within the room */
+
                                 /* Force UI update to render home screen */
                                 RpgEE.showScreen(RpgEE.Layers.Home);
+
                                 break;
                             case "add":
+                                /** "add" messages are sent by players joining the level. */
                                 if (!Players.ContainsKey(m.GetInt(0)))
                                 {
                                     Players.Add(m.GetInt(0), new Player(m.GetInt(0), m.GetString(1)));
@@ -165,16 +205,23 @@ namespace RPGEE
                 },
                 delegate (PlayerIOError error)
                 {
-
+                    /* Handle invalid roomID */
+                    Console.WriteLine("Timeout when joining room. Possibly invalid roomID.");
                 });
 
             },
             delegate (PlayerIOError error)
             {
-
+                /* Handle invalidCredentials */
+                Console.WriteLine("Invalid credentials");
             });
-            // Console.ReadKey();
+
+            #endregion
         }
+
+        #endregion
+
+        #region EEPhysics
 
         private static void Physics_OnBlockPositionChange(PlayerBlockEventArgs e)
         {
@@ -193,6 +240,8 @@ namespace RPGEE
         {
             Console.WriteLine(e.Player.Name + " Hit god block");
         }
+
+        #endregion
 
     }
 }

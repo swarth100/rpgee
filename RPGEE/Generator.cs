@@ -104,13 +104,12 @@ namespace RPGEE
             switch (i)
             {
                 case 0:
-                    value = 30F;
+                    value = 200;
+                    layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, value));
                     break;
                 default:
-                    value = 70F;
                     break;
             }
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, value));
         }
 
         /** Private helper function for a general component's table row generation
@@ -121,13 +120,12 @@ namespace RPGEE
             switch (i)
             {
                 case 0:
-                    value = 10F;
+                    value = 50;
+                    layout.RowStyles.Add(new RowStyle(SizeType.Absolute, value));
                     break;
                 default:
-                    value = 90F;
                     break;
             }
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, value));
         }
 
         #endregion
@@ -181,8 +179,8 @@ namespace RPGEE
             obj.Dock = DockStyle.None;
 
             /* Temporary enforcement of large size */
-            obj.Image = new Bitmap(2000, 2000);
-            obj.Size = new Size(2000, 2000);
+            // obj.Image = new Bitmap(10000, 10000);
+            // obj.Size = new Size(10000, 10000);
 
             return obj;
         }
