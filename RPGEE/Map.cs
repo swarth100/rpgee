@@ -160,6 +160,7 @@ namespace RPGEE
 
         public static void loadMap (PictureBox img)
         {
+            #region blockInit
             /* Prior to map loading, setup the bitmap lookup arrays */
 
             /* Initialis backgrounds */
@@ -170,13 +171,14 @@ namespace RPGEE
 
             int blockCount = 0;
 
-            /* Initialise blocks */
+            /* Initialise main blocks */
             for (int i = 0; i < blockInit.Length / 2; i++)
             {
                 foregroundRef[blockInit[i, 0]] = blockInit[i, 1]; //Add blockid and imageid
                 blockCount++;
             }
 
+            /* Magic number fix to allow for morphable blocks */
             blockCount -= 5;
             int miscCount = 0;
 
@@ -187,6 +189,7 @@ namespace RPGEE
                 miscCount++;
             }
 
+            /* Magic number fix to allow for morphable blocks */
             miscCount += 262;
             blockCount += miscCount;
 
@@ -196,49 +199,59 @@ namespace RPGEE
                 foregroundRef[decorInit[i, 0]] = decorInit[i, 1] + blockCount; //Add blockid and imageid
             }
 
+            #endregion
+
+            #region imgInit
+
             /* Generate a new image */
             img.Image = new Bitmap(BackgroundThread.width * blockSize, BackgroundThread.height * blockSize);
             img.Size = new Size(img.Image.Width, img.Image.Height);
 
-            /* Generate image containing all layer 0 blocks */
+            /** Generate image containing all layer 0 blocks
+             * The three types of layer 0 blocks, namely those from frontImage, miscImage and decoImage are appended into the
+             * same massive Bitmap.
+             * They are indexed subsequently, and indexes are assigned and adjusted above */
             Image blockImage = new Bitmap(frontImage.Width + miscImage.Width + decoImage.Width, blockSize);
             using (Graphics blockGraphics = Graphics.FromImage(blockImage))
             {
+                /* Regular frontImage blocks can start at (X,Y) = (0,0) */
                 Rectangle frontSrc = new Rectangle(0, 0, frontImage.Width, blockSize);
                 Rectangle frontDest = new Rectangle(0, 0, frontImage.Width, blockSize);
                 blockGraphics.DrawImage(frontImage, frontDest, frontSrc, GraphicsUnit.Pixel);
 
+                /* Miscellaneous blocks start at (X,Y) = (frontImage.Width, 0) */
                 Rectangle miscSrc = new Rectangle(0, 0, miscImage.Width, blockSize);
                 Rectangle miscDest = new Rectangle(frontImage.Width, 0, miscImage.Width, blockSize);
                 blockGraphics.DrawImage(miscImage, miscDest, miscSrc, GraphicsUnit.Pixel);
 
+                /* Decorative blocks start at (X,Y) = (frontImage.Width + miscImage.Width, 0) */
                 Rectangle decoSrc = new Rectangle(0, 0, decoImage.Width, blockSize);
                 Rectangle decoDest = new Rectangle(frontImage.Width + miscImage.Width, 0, decoImage.Width, blockSize);
                 blockGraphics.DrawImage(decoImage, decoDest, decoSrc, GraphicsUnit.Pixel);
             }
 
+            #endregion
+
             using (var screen = Graphics.FromImage(img.Image))
             {
-                // screen.DrawImage(blockImage, new Rectangle(0, 0, 3000, 3000), new Rectangle(0,0,3000,3000), GraphicsUnit.Pixel);
                 lock (BackgroundThread._roomDataLock)
                 {
-                    for (int x = 0; x < BackgroundThread.width; x ++)
+                    /* Iterate through all the blocks in the roomData and display them one by one */
+                    for (int y = 0; y < BackgroundThread.height; y ++)
                     {
-                        for (int y = 0; y < BackgroundThread.height; y++)
+                        for (int x = 0; x < BackgroundThread.width; x++)
                         {
-                            // Create rectangle for displaying image.
+                            /* Create rectangle for displaying the block. It is shared between foreground and background */
                             Rectangle destRect = new Rectangle(x * blockSize, y * blockSize, blockSize, blockSize);
 
-                            // Create rectangle for source image.
+                            /* Initialise and display the background for the given tile. Displays empty backgrounds*/
                             int backgroundBlockID = backgroundRef[BackgroundThread.roomData[1, x, y]];
-                            if (backgroundBlockID != 0)
-                            {
-                                Rectangle backRect = new Rectangle(backgroundBlockID * blockSize, 0, blockSize, blockSize);
+                            Rectangle backRect = new Rectangle(backgroundBlockID * blockSize, 0, blockSize, blockSize);
 
-                                /* Draw background to screen */
-                                screen.DrawImage(backImage, destRect, backRect, GraphicsUnit.Pixel);
-                            }
+                            /* Draw background to screen */
+                            screen.DrawImage(backImage, destRect, backRect, GraphicsUnit.Pixel);
 
+                            /* Initialise and display the foreground for the given tile. Does not display empty blocks */
                             int foregroundBlockID = foregroundRef[BackgroundThread.roomData[0, x, y]];
                             if (foregroundBlockID != 0)
                             {
