@@ -320,15 +320,21 @@ namespace RPGEE
          * Map must be in Draw Status and cursor can be dragged */
         public void drawPoint(Point p)
         {
+            /* Round the given cursor point to the nearest grid-alligned blockSize square */
             Point roundP = new Point (((int)p.X / blockSize) * blockSize,  ((int)p.Y / blockSize) * blockSize);
 
+            /* Determine which zone is currently selected for drawing */
             Image curZone = Zones[selectedZone];
 
+            /* Render the new point onto the current Zone's overlay */
             using (var overlayGraphics = Graphics.FromImage(curZone))
             {
                 overlayGraphics.FillRectangle(brush, new Rectangle(roundP, new Size(blockSize, blockSize)));
             }
 
+            // TODO: Add point to seperate DataStructure for storage
+
+            /* Render all overlays onto the screen */
             renderPoint(roundP);
         }
 
@@ -336,15 +342,16 @@ namespace RPGEE
          * Handles async refresh event of the PictureBox in the form */
         private void renderPoint(Point pt)
         {
-            Rectangle rect = new Rectangle(pt.X, pt.Y, blockSize, blockSize);
+            /* Determine the size of the update rectangle */
+            Rectangle rect = new Rectangle(pt, new Size(blockSize, blockSize));
             using (var screen = Graphics.FromImage(mapScreen))
             {
+                /* Render the map with the given update area */
                 renderPointHelper(screen, map, rect);
 
+                /* Render every zone with the given update area */
                 foreach (Image zone in Zones)
-                {
                     renderPointHelper(screen, map, rect);
-                }
             }
 
             RpgEE.refreshMap();
@@ -361,12 +368,12 @@ namespace RPGEE
         {
             using (var screen = Graphics.FromImage(mapScreen))
             {
+                /* Render the whole map's image */
                 renderMapHelper(screen, map);
 
+                /* Render every zone's entire overlay */
                 foreach (Image zone in Zones)
-                {
                     renderMapHelper(screen, zone);
-                }
             }
 
             RpgEE.refreshMap();
