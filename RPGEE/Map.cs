@@ -8,8 +8,20 @@ using System.Windows.Forms;
 
 namespace RPGEE
 {
-    class Map
+    public class Map
     {
+
+        public enum Status
+        {
+            Move,
+            Add,
+            Delete
+        }
+
+        /* Public fields */
+
+        /* Edit status for the map */
+        public Status status { get; set; }
 
         #region blockIds
 
@@ -153,12 +165,17 @@ namespace RPGEE
         private static int[] backgroundRef = new int[2000];
         private static int[] foregroundRef = new int[2000];
 
+        /* Image resource references */
         private static Image frontImage = Properties.Resources.BLOCKS_front;
         private static Image miscImage = Properties.Resources.BLOCKS_misc;
         private static Image decoImage = Properties.Resources.BLOCKS_deco;
         private static Image backImage = Properties.Resources.BLOCKS_back;
 
-        public static void loadMap (PictureBox img)
+        /* Map instance */
+        private static Image map;
+
+        /** Initialise a new map instance */
+        public Map()
         {
             #region blockInit
             /* Prior to map loading, setup the bitmap lookup arrays */
@@ -200,12 +217,23 @@ namespace RPGEE
             }
 
             #endregion
+        }
 
+        /** Public method to initialise the map Image
+         * The rendered map is also placed on the screen */
+        public void loadMap (PictureBox img)
+        {
             #region imgInit
 
             /* Generate a new image */
             img.Image = new Bitmap(BackgroundThread.width * blockSize, BackgroundThread.height * blockSize);
             img.Size = new Size(img.Image.Width, img.Image.Height);
+
+            /* Clone the new image as the map */
+            map = new Bitmap(img.Image.Width, img.Image.Height);
+
+            /* Initialise status to Move mode */
+            status = Status.Move;
 
             /** Generate image containing all layer 0 blocks
              * The three types of layer 0 blocks, namely those from frontImage, miscImage and decoImage are appended into the
@@ -232,7 +260,8 @@ namespace RPGEE
 
             #endregion
 
-            using (var screen = Graphics.FromImage(img.Image))
+            /* Render the mapData onto the map with the appropriate Sprites */
+            using (var mapGraphics = Graphics.FromImage(map))
             {
                 lock (BackgroundThread._roomDataLock)
                 {
@@ -249,7 +278,7 @@ namespace RPGEE
                             Rectangle backRect = new Rectangle(backgroundBlockID * blockSize, 0, blockSize, blockSize);
 
                             /* Draw background to screen */
-                            screen.DrawImage(backImage, destRect, backRect, GraphicsUnit.Pixel);
+                            mapGraphics.DrawImage(backImage, destRect, backRect, GraphicsUnit.Pixel);
 
                             /* Initialise and display the foreground for the given tile. Does not display empty blocks */
                             int foregroundBlockID = foregroundRef[BackgroundThread.roomData[0, x, y]];
@@ -258,10 +287,16 @@ namespace RPGEE
                                 Rectangle frontRect = new Rectangle(foregroundBlockID * blockSize, 0, blockSize, blockSize);
 
                                 /* Draw foreground to screen */
-                                screen.DrawImage(blockImage, destRect, frontRect, GraphicsUnit.Pixel);
+                                mapGraphics.DrawImage(blockImage, destRect, frontRect, GraphicsUnit.Pixel);
                             }
                         }
                     }
+                }
+
+                /* Copy the map onto the screen */
+                using (var screen = Graphics.FromImage(img.Image))
+                {
+                    screen.DrawImage(map, new Point(0,0));
                 }
 
                 RpgEE.spawnMap();
