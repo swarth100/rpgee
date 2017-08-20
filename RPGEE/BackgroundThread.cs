@@ -42,6 +42,8 @@ namespace RPGEE
         /* RoomData object */
         public static uint[,,] roomData;
         public static Object _roomDataLock = new Object();
+        public static int width = 0;
+        public static int height = 0;
 
         /* Class fields */
         private static string email = "";
@@ -81,6 +83,12 @@ namespace RPGEE
                             lock (_roomDataLock)
                             {
                                 roomData = new uint[2, e.GetInt(18), e.GetInt(19)];
+
+                                /* Initialise width end height fields */
+                                width = e.GetInt(18);
+                                height = e.GetInt(19);
+
+                                /* Parse the room's DataCHunks */
                                 DataChunk[] chunks = InitParse.Parse(e);
                                 foreach (var chunk in chunks)
                                     foreach (var pos in chunk.Locations)
