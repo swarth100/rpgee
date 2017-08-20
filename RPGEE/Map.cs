@@ -264,6 +264,8 @@ namespace RPGEE
                     }
                 }
 
+                RpgEE.spawnMap();
+
                 //img.Refresh();
             }
         }
