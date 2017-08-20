@@ -11,6 +11,10 @@ namespace RPGEE
     class DraggablePictureBox : PictureBox
     {
         private bool Dragging;
+        private int newTopPos;
+        private int newLeftPos;
+        private int maxRightPos;
+        private int maxBottomPos;
         private readonly DragMousePosition mousePos;
 
         private class DragMousePosition
@@ -41,8 +45,9 @@ namespace RPGEE
                 Dragging = true;
                 mousePos.X = e.X;
                 mousePos.Y = e.Y;
-                this.Width = 5000;
-                this.Height = 5000;
+
+                maxBottomPos = RpgEE.getMapHeight();
+                maxRightPos = RpgEE.getMapWidth();
             }
         }
 
@@ -51,8 +56,13 @@ namespace RPGEE
             Control c = sender as Control;
             if (Dragging && c != null)
             {
-                c.Top = e.Y + c.Top - mousePos.Y;
-                c.Left = e.X + c.Left - mousePos.X;
+                newTopPos = e.Y + c.Top - mousePos.Y;
+                if ((newTopPos < 0) && (newTopPos + c.Height > maxBottomPos))
+                    c.Top = newTopPos;
+                
+                newLeftPos = e.X + c.Left - mousePos.X;
+                if ((newLeftPos < 0) && (newLeftPos + c.Width > maxRightPos))
+                    c.Left = newLeftPos;
             }
         }
     }
