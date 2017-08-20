@@ -16,6 +16,7 @@ namespace RPGEE
         private int maxRightPos;
         private int maxBottomPos;
         private readonly DragMousePosition mousePos;
+        private readonly Map map;
 
         private class DragMousePosition
         {
@@ -23,10 +24,9 @@ namespace RPGEE
             public int Y { get; set; }
         }
 
-        public DraggablePictureBox() : base()
+        public DraggablePictureBox(Map map) : base()
         {
-            Console.WriteLine("Called constructor");
-
+            this.map = map;
             mousePos = new DragMousePosition();
 
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OnMouseDown);
@@ -40,7 +40,7 @@ namespace RPGEE
         }
         private void OnMouseDown(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
+            if (e.Button == MouseButtons.Left && map.status == Map.Status.Move)
             {
                 Dragging = true;
                 mousePos.X = e.X;
