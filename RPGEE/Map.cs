@@ -173,7 +173,12 @@ namespace RPGEE
         private static Image backImage = Properties.Resources.BLOCKS_back;
 
         /* Map instance */
+        private Image mapScreen;
         private static Image map;
+        private static Image overlay;
+
+        /* Brush */
+        private static SolidBrush brush = new SolidBrush(System.Drawing.Color.Red);
 
         /** Initialise a new map instance */
         public Map()
@@ -230,8 +235,12 @@ namespace RPGEE
             img.Image = new Bitmap(BackgroundThread.width * blockSize, BackgroundThread.height * blockSize);
             img.Size = new Size(img.Image.Width, img.Image.Height);
 
+            /* Save the image's screen */
+            mapScreen = img.Image;
+
             /* Clone the new image as the map */
             map = new Bitmap(img.Image.Width, img.Image.Height);
+            overlay = new Bitmap(img.Image.Width, img.Image.Height);
 
             /* Initialise status to Move mode */
             status = Status.Move;
@@ -295,15 +304,30 @@ namespace RPGEE
                 }
 
                 /* Copy the map onto the screen */
-                using (var screen = Graphics.FromImage(img.Image))
+                using (var screen = Graphics.FromImage(mapScreen))
                 {
                     screen.DrawImage(map, new Point(0,0));
                 }
 
                 RpgEE.spawnMap();
-
-                //img.Refresh();
             }
+        }
+
+        public void drawPoint(Point p)
+        {
+            Point roundP = new Point (((int)p.X / blockSize) * blockSize,  ((int)p.Y / blockSize) * blockSize);
+
+            using (var overlayGraphics = Graphics.FromImage(overlay))
+            {
+                overlayGraphics.FillRectangle(brush, new Rectangle(roundP, new Size(blockSize, blockSize)));
+            }
+
+            using (var screen = Graphics.FromImage(mapScreen))
+            {
+                screen.DrawImage(overlay, new Point(0, 0));
+            }
+
+            RpgEE.refreshMap();
         }
     }
 }
