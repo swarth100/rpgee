@@ -26,6 +26,12 @@ namespace RPGEE
             Custom
         }
 
+        /* Public elements */
+
+        /* Random generator */
+        public static Random RandomGenerator = new Random();
+        public static int ZoneID = 0;
+
         /** Login Screen UI Components
          *  Initialised within RpgEE() Constructor
          */
@@ -183,6 +189,7 @@ namespace RPGEE
             fillMapBtn.Click += new System.EventHandler(this.fillMapBtn_Click);
 
             newMapBtn = Generator<Button>.addObject(new Button() { Text = "N" }, mapBtnTable, 3, 0);
+            newMapBtn.Click += new System.EventHandler(this.newMapBtn_Click);
 
             deleteMapBtn = Generator<Button>.addObject(new Button() { Text = "R" }, mapBtnTable, 4, 0);
             deleteMapBtn.Click += new System.EventHandler(this.deleteMapBtn_Click);
@@ -241,6 +248,11 @@ namespace RPGEE
         void fillMapBtn_Click(object sender, EventArgs e)
         {
             map.status = Map.Status.Fill;
+        }
+
+        void newMapBtn_Click(object sender, EventArgs e)
+        {
+            map.addNewZone();
         }
 
         void deleteMapBtn_Click(object sender, EventArgs e)
