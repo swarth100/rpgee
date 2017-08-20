@@ -52,6 +52,7 @@ namespace RPGEE
          */
         private static TableLayoutPanel mapTable;
         public static PictureBox mapPct;
+        public static Map map;
         private static Label loadLbl;
         private readonly Button backBtn;
         private readonly Button sideBtn;
@@ -136,8 +137,12 @@ namespace RPGEE
              * +-----+---------------------+ 
              */
             mapTable = Generator<TableLayoutPanel>.generateGeneralTable(this);
-            mapPct = new DraggablePictureBox();
-            // mapPct = Generator<PictureBox>.addDraggablePictureBox(new DraggablePictureBox(), mapTable, 1, 1);
+
+            /* Initialise the MAP */
+            map = new Map();
+
+            /* Initialise the map's draggable image and placeholder */
+            mapPct = new DraggablePictureBox(map);
             loadLbl = Generator<Label>.addObject(new Label() { Text = "Loading ...", TextAlign = ContentAlignment.MiddleCenter }, mapTable, 1, 1);
 
             /* Temporary button placeholders */
