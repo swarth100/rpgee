@@ -14,7 +14,8 @@ namespace RPGEE
         public enum Status
         {
             Move,
-            Add,
+            Draw,
+            Fill,
             Delete
         }
 
