@@ -10,7 +10,6 @@ namespace RPGEE
 {
     public class Map
     {
-
         public enum Status
         {
             Move,
@@ -162,7 +161,7 @@ namespace RPGEE
         #endregion
 
         /* Private fields */
-        private static int blockSize = 16;
+        public static int blockSize = 16;
         private static int[] backgroundRef = new int[2000];
         private static int[] foregroundRef = new int[2000];
 
@@ -177,11 +176,8 @@ namespace RPGEE
         private static Image map;
 
         /* Zones */
-        private List<Image> Zones = new List<Image>();
+        private List<Zone> Zones = new List<Zone>();
         private int selectedZone;
-
-        /* Brush */
-        private static SolidBrush brush = new SolidBrush(System.Drawing.Color.Red);
 
         /** Initialise a new map instance */
         public Map()
@@ -242,8 +238,8 @@ namespace RPGEE
             mapScreen = img.Image;
 
             /* Initialise zones */
-            Zones.Add(new Bitmap(img.Image.Width, img.Image.Height));
-            selectedZone = 0;
+            Zone defaultZone = new Zone(img.Image, Zones);
+            selectedZone = defaultZone.getListIndex();
 
             /* Clone the new image as the map */
             map = new Bitmap(img.Image.Width, img.Image.Height);
@@ -324,19 +320,31 @@ namespace RPGEE
             Point roundP = new Point (((int)p.X / blockSize) * blockSize,  ((int)p.Y / blockSize) * blockSize);
 
             /* Determine which zone is currently selected for drawing */
-            Image curZone = Zones[selectedZone];
+            Zone curZone = Zones[selectedZone];
 
-            /* Render the new point onto the current Zone's overlay */
-            using (var overlayGraphics = Graphics.FromImage(curZone))
+            if (!curZone.isPointSelected(roundP))
             {
-                overlayGraphics.FillRectangle(brush, new Rectangle(roundP, new Size(blockSize, blockSize)));
+
+                /* Render the new point onto the current Zone's overlay */
+                using (var overlayGraphics = Graphics.FromImage(curZone.Image))
+                {
+                    overlayGraphics.FillRectangle(curZone.Brush, new Rectangle(roundP, new Size(blockSize, blockSize)));
+                }
+
+                curZone.addPoint(roundP);
+
+                /* Render all overlays onto the screen */
+                renderPoint(roundP);
             }
-
-            // TODO: Add point to seperate DataStructure for storage
-
-            /* Render all overlays onto the screen */
-            renderPoint(roundP);
         }
+
+        /** Public function invoked to spawn a new Zone to be drawn onto the map */
+        public void addNewZone()
+        {
+            selectedZone = new Zone(map, Zones).getListIndex();
+        }
+
+        #region mapRender
 
         /** Private helper function to render a newly drawn point onto the screen.
          * Handles async refresh event of the PictureBox in the form */
@@ -350,8 +358,8 @@ namespace RPGEE
                 renderPointHelper(screen, map, rect);
 
                 /* Render every zone with the given update area */
-                foreach (Image zone in Zones)
-                    renderPointHelper(screen, map, rect);
+                foreach (Zone zone in Zones)
+                    renderPointHelper(screen, zone.Image, rect);
             }
 
             RpgEE.refreshMap();
@@ -372,8 +380,8 @@ namespace RPGEE
                 renderMapHelper(screen, map);
 
                 /* Render every zone's entire overlay */
-                foreach (Image zone in Zones)
-                    renderMapHelper(screen, zone);
+                foreach (Zone zone in Zones)
+                    renderMapHelper(screen, zone.Image);
             }
 
             RpgEE.refreshMap();
@@ -383,5 +391,6 @@ namespace RPGEE
         {
             screen.DrawImage(img, new Point(0, 0));
         }
+#endregion
     }
 }
