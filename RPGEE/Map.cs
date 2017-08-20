@@ -175,7 +175,10 @@ namespace RPGEE
         /* Map instance */
         private Image mapScreen;
         private static Image map;
-        private static Image overlay;
+
+        /* Zones */
+        private List<Image> Zones = new List<Image>();
+        private int selectedZone;
 
         /* Brush */
         private static SolidBrush brush = new SolidBrush(System.Drawing.Color.Red);
@@ -238,9 +241,12 @@ namespace RPGEE
             /* Save the image's screen */
             mapScreen = img.Image;
 
+            /* Initialise zones */
+            Zones.Add(new Bitmap(img.Image.Width, img.Image.Height));
+            selectedZone = 0;
+
             /* Clone the new image as the map */
             map = new Bitmap(img.Image.Width, img.Image.Height);
-            overlay = new Bitmap(img.Image.Width, img.Image.Height);
 
             /* Initialise status to Move mode */
             status = Status.Move;
@@ -303,31 +309,72 @@ namespace RPGEE
                     }
                 }
 
-                /* Copy the map onto the screen */
-                using (var screen = Graphics.FromImage(mapScreen))
-                {
-                    screen.DrawImage(map, new Point(0,0));
-                }
+                /* Render the map onto the screen */
+                renderMap();
 
                 RpgEE.spawnMap();
             }
         }
 
+        /** Public function invoked during a Draw Event to the screen.
+         * Map must be in Draw Status and cursor can be dragged */
         public void drawPoint(Point p)
         {
             Point roundP = new Point (((int)p.X / blockSize) * blockSize,  ((int)p.Y / blockSize) * blockSize);
 
-            using (var overlayGraphics = Graphics.FromImage(overlay))
+            Image curZone = Zones[selectedZone];
+
+            using (var overlayGraphics = Graphics.FromImage(curZone))
             {
                 overlayGraphics.FillRectangle(brush, new Rectangle(roundP, new Size(blockSize, blockSize)));
             }
 
+            renderPoint(roundP);
+        }
+
+        /** Private helper function to render a newly drawn point onto the screen.
+         * Handles async refresh event of the PictureBox in the form */
+        private void renderPoint(Point pt)
+        {
+            Rectangle rect = new Rectangle(pt.X, pt.Y, blockSize, blockSize);
             using (var screen = Graphics.FromImage(mapScreen))
             {
-                screen.DrawImage(overlay, new Point(0, 0));
+                renderPointHelper(screen, map, rect);
+
+                foreach (Image zone in Zones)
+                {
+                    renderPointHelper(screen, map, rect);
+                }
             }
 
             RpgEE.refreshMap();
+        }
+
+        private void renderPointHelper(Graphics screen, Image img, Rectangle rect)
+        {
+            screen.DrawImage(img, rect, rect, GraphicsUnit.Pixel);
+        }
+
+        /** Private helper function to re-render the whole map onto the screen.
+         * Handles async refresh event of the PictureBox in the form */
+        private void renderMap()
+        {
+            using (var screen = Graphics.FromImage(mapScreen))
+            {
+                renderMapHelper(screen, map);
+
+                foreach (Image zone in Zones)
+                {
+                    renderMapHelper(screen, zone);
+                }
+            }
+
+            RpgEE.refreshMap();
+        }
+
+        private void renderMapHelper(Graphics screen, Image img)
+        {
+            screen.DrawImage(img, new Point(0, 0));
         }
     }
 }
