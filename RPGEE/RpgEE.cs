@@ -51,9 +51,15 @@ namespace RPGEE
          *  Initialised within RpgEE() Constructor
          */
         private static TableLayoutPanel mapTable;
+        private readonly TableLayoutPanel sideNavTable;
         public static PictureBox mapPct;
         public static Map map;
         private static Label loadLbl;
+        private readonly TableLayoutPanel mapBtnTable;
+        private readonly Button moveMapBtn;
+        private readonly Button drawMapBtn;
+        private readonly Button fillMapBtn;
+        private readonly Button deleteMapBtn;
         private readonly Button backBtn;
         private readonly Button sideBtn;
         private readonly Button topBtn;
@@ -69,6 +75,8 @@ namespace RPGEE
             this.Text = "RpgEE";
             this.Size = new Size(600, 400);
             RpgEEForm = this;
+
+            #region loginLayout
 
             /** Generates a table to dock login Components
              * Table layout:
@@ -99,6 +107,10 @@ namespace RPGEE
             loginBtn = Generator<Button>.addObject(new Button() { Text = "login" }, loginTable, 1, 6);
             loginBtn.Click += new System.EventHandler(this.loginBtn_Click);
 
+            #endregion
+
+            #region homeLayout
+
             /** Generates a table to dock home Button Components
              * Table layout:
              * 
@@ -125,6 +137,10 @@ namespace RPGEE
             spritesBtn = Generator<Button>.addObject(new Button() { Text = "Sprites" }, homeTable, 1, 1);
             optionsBtn = Generator<Button>.addObject(new Button() { Text = "Options" }, homeTable, 2, 1);
 
+            #endregion
+
+            #region mapLayout
+
             /** Generates a table to dock map Button Components
              * Table layout:
              * 
@@ -145,10 +161,26 @@ namespace RPGEE
             mapPct = new DraggablePictureBox(map);
             loadLbl = Generator<Label>.addObject(new Label() { Text = "Loading ...", TextAlign = ContentAlignment.MiddleCenter }, mapTable, 1, 1);
 
+            /* Initialise sideNav Components */
+            sideNavTable = Generator<TableLayoutPanel>.generateSideTable(2, 1);
+            Generator<TableLayoutPanel>.addObject(sideNavTable, mapTable, 0, 1);
+
+            // Temporary
+            sideBtn = Generator<Button>.addObject(new Button() { Text = "SideNav" }, sideNavTable, 0, 0);
+
+            /* Initialise mapButtons */
+            mapBtnTable = Generator<TableLayoutPanel>.generateButtonTable(1, 4);
+            Generator<TableLayoutPanel>.addObject(mapBtnTable, sideNavTable, 1, 0);
+            moveMapBtn = Generator<Button>.addObject(new Button() { Text = "M" }, mapBtnTable, 0, 0);
+            drawMapBtn = Generator<Button>.addObject(new Button() { Text = "D" }, mapBtnTable, 1, 0);
+            fillMapBtn = Generator<Button>.addObject(new Button() { Text = "F" }, mapBtnTable, 2, 0);
+            deleteMapBtn = Generator<Button>.addObject(new Button() { Text = "R" }, mapBtnTable, 3, 0);
+
             /* Temporary button placeholders */
             backBtn = Generator<Button>.addObject(new Button() { Text = "Back" }, mapTable, 0, 0);
             topBtn = Generator<Button>.addObject(new Button() { Text = "RpgEE" }, mapTable, 1, 0);
-            sideBtn = Generator<Button>.addObject(new Button() { Text = "SideNav" }, mapTable, 0, 1);
+
+            #endregion
 
             /* Spawn computations thread, set it to background and run it */
             computationThread = new Thread(BackgroundThread.runComputationsThread);
@@ -156,7 +188,7 @@ namespace RPGEE
             computationThread.Start();
 
             /* Debug */
-            // RpgEE.showScreen(Layers.Home);
+             RpgEE.showScreen(Layers.Home);
         }
 
         #region btnClicks
