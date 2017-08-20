@@ -259,5 +259,15 @@ namespace RPGEE
         }
 
         #endregion
+
+        public static int getMapHeight()
+        {
+            return mapTable.GetControlFromPosition(1, 1).Bottom - mapTable.GetControlFromPosition(1, 1).Top;
+        }
+
+        public static int getMapWidth()
+        {
+            return mapTable.GetControlFromPosition(1, 1).Right - mapTable.GetControlFromPosition(1, 1).Left;
+        }
     }
 }
