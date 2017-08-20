@@ -59,6 +59,7 @@ namespace RPGEE
         private readonly Button moveMapBtn;
         private readonly Button drawMapBtn;
         private readonly Button fillMapBtn;
+        private readonly Button newMapBtn;
         private readonly Button deleteMapBtn;
         private readonly Button backBtn;
         private readonly Button sideBtn;
@@ -73,7 +74,7 @@ namespace RPGEE
         public RpgEE()
         {
             this.Text = "RpgEE";
-            this.Size = new Size(600, 400);
+            this.Size = new Size(650, 400);
             RpgEEForm = this;
 
             #region loginLayout
@@ -169,7 +170,7 @@ namespace RPGEE
             sideBtn = Generator<Button>.addObject(new Button() { Text = "SideNav" }, sideNavTable, 0, 0);
 
             /* Initialise mapButtons */
-            mapBtnTable = Generator<TableLayoutPanel>.generateButtonTable(1, 4);
+            mapBtnTable = Generator<TableLayoutPanel>.generateButtonTable(1, 5);
             Generator<TableLayoutPanel>.addObject(mapBtnTable, sideNavTable, 1, 0);
 
             moveMapBtn = Generator<Button>.addObject(new Button() { Text = "M" }, mapBtnTable, 0, 0);
@@ -181,7 +182,9 @@ namespace RPGEE
             fillMapBtn = Generator<Button>.addObject(new Button() { Text = "F" }, mapBtnTable, 2, 0);
             fillMapBtn.Click += new System.EventHandler(this.fillMapBtn_Click);
 
-            deleteMapBtn = Generator<Button>.addObject(new Button() { Text = "R" }, mapBtnTable, 3, 0);
+            newMapBtn = Generator<Button>.addObject(new Button() { Text = "N" }, mapBtnTable, 3, 0);
+
+            deleteMapBtn = Generator<Button>.addObject(new Button() { Text = "R" }, mapBtnTable, 4, 0);
             deleteMapBtn.Click += new System.EventHandler(this.deleteMapBtn_Click);
 
             /* Temporary button placeholders */
@@ -321,6 +324,30 @@ namespace RPGEE
         public static void spawnMap()
         {
             RpgEE.SpawnMap(RpgEEForm, mapTable);
+        }
+
+        delegate void RefreshMapCallback(Form form);
+
+        private static void RefreshMap(Form form, PictureBox img)
+        {
+            /** InvokeRequired required compares the thread ID of the 
+             * calling thread to the thread ID of the creating thread. 
+             * If these threads are different, it returns true. */
+            if (img.InvokeRequired)
+            {
+                SpawnMapCallback cb = new SpawnMapCallback(SpawnMap);
+                form.Invoke(cb, new object[] { form, img });
+            }
+            else
+            {
+                /* Refresh the image */
+                img.Refresh();
+            }
+        }
+
+        public static void refreshMap()
+        {
+            RpgEE.RefreshMap(RpgEEForm, mapPct);
         }
 
         #endregion
