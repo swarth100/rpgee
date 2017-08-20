@@ -181,8 +181,8 @@ namespace RPGEE
             obj.Dock = DockStyle.None;
 
             /* Temporary enforcement of large size */
-            obj.Image = new Bitmap(2000, 2000);
-            obj.Size = new Size(2000, 2000);
+            // obj.Image = new Bitmap(10000, 10000);
+            // obj.Size = new Size(10000, 10000);
 
             return obj;
         }
