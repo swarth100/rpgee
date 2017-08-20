@@ -17,7 +17,7 @@ namespace RPGEE
          * Creates a new TableLayoutPanel Object initialised accordingly.
          * The newly generated table is hid from the container form by default.
          *  */
-        private static TableLayoutPanel generateTable(Action<TableLayoutPanel, int> rowFunc, Action<TableLayoutPanel, int> colFunc, Form container, int rows, int cols)
+        private static TableLayoutPanel generateTable(Action<TableLayoutPanel, int> rowFunc, Action<TableLayoutPanel, int> colFunc, int rows, int cols)
         {
             /* Initialises the table and row/column spacing */
             TableLayoutPanel layoutTable = new TableLayoutPanel();
@@ -35,14 +35,23 @@ namespace RPGEE
 
             layoutTable.Dock = DockStyle.Fill;
 
-            /* Adds the table to the form */
-            container.Controls.Add(layoutTable);
-
-            /* Hides the table from the form, hence initialisation isn't rendered */
-            layoutTable.Visible = false;
-
             return layoutTable;
         }
+
+        /* */
+        private static TableLayoutPanel generateTableForm(Action<TableLayoutPanel, int> rowFunc, Action<TableLayoutPanel, int> colFunc, Object container, int rows, int cols)
+        {
+            TableLayoutPanel panel = generateTable(rowFunc, colFunc, rows, cols);
+
+            ((Form) container).Controls.Add(panel);
+
+            /* Hides the table from the form, hence initialisation isn't rendered */
+            panel.Visible = false;
+
+            return panel;
+        }
+
+        #region homeTable
 
         /** Private helper function for home table column generation
          * Given a TableLayoutPanel generates 100% wide (equally spaced) columns
@@ -59,6 +68,10 @@ namespace RPGEE
         {
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         }
+
+        #endregion
+
+        #region loginTable
 
         /** Private helper function for login table column generation
          *  */
@@ -96,6 +109,10 @@ namespace RPGEE
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, value));
         }
 
+        #endregion
+
+        #region generalTable
+
         /** Private helper function for a general component's table column generation
          *  */
         private static void generateGeneralTableHelperCols(TableLayoutPanel layout, int i)
@@ -108,6 +125,7 @@ namespace RPGEE
                     layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, value));
                     break;
                 default:
+                    layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
                     break;
             }
         }
@@ -120,13 +138,62 @@ namespace RPGEE
             switch (i)
             {
                 case 0:
+                    break;
+                case 1:
                     value = 50;
                     layout.RowStyles.Add(new RowStyle(SizeType.Absolute, value));
                     break;
-                default:
+            }
+        }
+
+        #endregion
+
+        #region sideTable
+
+        /** Private helper function for a sideNav component's table column generation
+         *  */
+        private static void generateSideTableHelperCols(TableLayoutPanel layout, int i)
+        {
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        }
+
+        /** Private helper function for a sideNav component's table row generation
+         *  */
+        private static void generateSideTableHelperRows(TableLayoutPanel layout, int i)
+        {
+            System.Single value;
+            switch (i)
+            {
+                case 0:
+                    value = 100F;
+                    layout.RowStyles.Add(new RowStyle(SizeType.Percent, value));
+                    break;
+                case 1:
+                    value = 50;
+                    layout.RowStyles.Add(new RowStyle(SizeType.Absolute, value));
                     break;
             }
         }
+
+        #endregion
+
+        #region buttonTable
+
+        /** Private helper function for a map button's component's table column generation
+         *  */
+        private static void generateButtonTableHelperCols(TableLayoutPanel layout, int i)
+        {
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        }
+
+        /** Private helper function for a map button's component's table column generation
+         *  */
+        private static void generateButtonTableHelperRows(TableLayoutPanel layout, int i)
+        {
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        }
+
+        #endregion
 
         #endregion
 
@@ -135,19 +202,33 @@ namespace RPGEE
         /** Public function to generate the Home Table */
         public static TableLayoutPanel generateHomeTable(Form container, int rows, int cols)
         {
-            return generateTable(generateHomeTableHelperRows, generateHomeTableHelperCols, container, rows, cols);
+            return generateTableForm(generateHomeTableHelperRows, generateHomeTableHelperCols, container, rows, cols);
         }
 
         /** Public function to generate the Home Table */
         public static TableLayoutPanel generateLoginTable(Form container, int rows, int cols)
         {
-            return generateTable(generateLoginTableHelperRows, generateLoginTableHelperCols, container, rows, cols);
+            return generateTableForm(generateLoginTableHelperRows, generateLoginTableHelperCols, container, rows, cols);
         }
 
         /** Public function to generate a General component Table */
         public static TableLayoutPanel generateGeneralTable(Form container)
         {
-            return generateTable(generateGeneralTableHelperRows, generateGeneralTableHelperCols, container, 2, 2);
+            return generateTableForm(generateGeneralTableHelperRows, generateGeneralTableHelperCols, container, 2, 2);
+        }
+
+        #endregion
+
+        #region subTableGenerators
+
+        public static TableLayoutPanel generateSideTable(int rows, int cols)
+        {
+            return generateTable(generateSideTableHelperRows, generateSideTableHelperCols, rows, cols);
+        }
+
+        public static TableLayoutPanel generateButtonTable(int rows, int cols)
+        {
+            return generateTable(generateButtonTableHelperRows, generateButtonTableHelperCols, rows, cols);
         }
 
         #endregion
@@ -177,10 +258,6 @@ namespace RPGEE
             /* The DraggablePictureBox is added to the sub-level layout panel with no enforced docking */
             Generator<PictureBox>.addObject(obj, mapHelper, 0, 0);
             obj.Dock = DockStyle.None;
-
-            /* Temporary enforcement of large size */
-            // obj.Image = new Bitmap(10000, 10000);
-            // obj.Size = new Size(10000, 10000);
 
             return obj;
         }
