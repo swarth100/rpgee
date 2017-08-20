@@ -121,7 +121,7 @@ namespace RPGEE
             switch (i)
             {
                 case 0:
-                    value = 200;
+                    value = 250;
                     layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, value));
                     break;
                 default:
