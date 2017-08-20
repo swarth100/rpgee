@@ -8,8 +8,20 @@ using System.Windows.Forms;
 
 namespace RPGEE
 {
-    class Map
+    public class Map
     {
+        public enum Status
+        {
+            Move,
+            Draw,
+            Fill,
+            Delete
+        }
+
+        /* Public fields */
+
+        /* Edit status for the map */
+        public Status status { get; set; }
 
         #region blockIds
 
@@ -149,16 +161,26 @@ namespace RPGEE
         #endregion
 
         /* Private fields */
-        private static int blockSize = 16;
+        public static int blockSize = 16;
         private static int[] backgroundRef = new int[2000];
         private static int[] foregroundRef = new int[2000];
 
+        /* Image resource references */
         private static Image frontImage = Properties.Resources.BLOCKS_front;
         private static Image miscImage = Properties.Resources.BLOCKS_misc;
         private static Image decoImage = Properties.Resources.BLOCKS_deco;
         private static Image backImage = Properties.Resources.BLOCKS_back;
 
-        public static void loadMap (PictureBox img)
+        /* Map instance */
+        private Image mapScreen;
+        private static Image map;
+
+        /* Zones */
+        private List<Zone> Zones = new List<Zone>();
+        private int selectedZone;
+
+        /** Initialise a new map instance */
+        public Map()
         {
             #region blockInit
             /* Prior to map loading, setup the bitmap lookup arrays */
@@ -200,12 +222,30 @@ namespace RPGEE
             }
 
             #endregion
+        }
 
+        /** Public method to initialise the map Image
+         * The rendered map is also placed on the screen */
+        public void loadMap (PictureBox img)
+        {
             #region imgInit
 
             /* Generate a new image */
             img.Image = new Bitmap(BackgroundThread.width * blockSize, BackgroundThread.height * blockSize);
             img.Size = new Size(img.Image.Width, img.Image.Height);
+
+            /* Save the image's screen */
+            mapScreen = img.Image;
+
+            /* Initialise zones */
+            Zone defaultZone = new Zone(img.Image, Zones);
+            selectedZone = defaultZone.getListIndex();
+
+            /* Clone the new image as the map */
+            map = new Bitmap(img.Image.Width, img.Image.Height);
+
+            /* Initialise status to Move mode */
+            status = Status.Move;
 
             /** Generate image containing all layer 0 blocks
              * The three types of layer 0 blocks, namely those from frontImage, miscImage and decoImage are appended into the
@@ -232,7 +272,8 @@ namespace RPGEE
 
             #endregion
 
-            using (var screen = Graphics.FromImage(img.Image))
+            /* Render the mapData onto the map with the appropriate Sprites */
+            using (var mapGraphics = Graphics.FromImage(map))
             {
                 lock (BackgroundThread._roomDataLock)
                 {
@@ -249,7 +290,7 @@ namespace RPGEE
                             Rectangle backRect = new Rectangle(backgroundBlockID * blockSize, 0, blockSize, blockSize);
 
                             /* Draw background to screen */
-                            screen.DrawImage(backImage, destRect, backRect, GraphicsUnit.Pixel);
+                            mapGraphics.DrawImage(backImage, destRect, backRect, GraphicsUnit.Pixel);
 
                             /* Initialise and display the foreground for the given tile. Does not display empty blocks */
                             int foregroundBlockID = foregroundRef[BackgroundThread.roomData[0, x, y]];
@@ -258,16 +299,98 @@ namespace RPGEE
                                 Rectangle frontRect = new Rectangle(foregroundBlockID * blockSize, 0, blockSize, blockSize);
 
                                 /* Draw foreground to screen */
-                                screen.DrawImage(blockImage, destRect, frontRect, GraphicsUnit.Pixel);
+                                mapGraphics.DrawImage(blockImage, destRect, frontRect, GraphicsUnit.Pixel);
                             }
                         }
                     }
                 }
 
-                RpgEE.spawnMap();
+                /* Render the map onto the screen */
+                renderMap();
 
-                //img.Refresh();
+                RpgEE.spawnMap();
             }
         }
+
+        /** Public function invoked during a Draw Event to the screen.
+         * Map must be in Draw Status and cursor can be dragged */
+        public void drawPoint(Point p)
+        {
+            /* Round the given cursor point to the nearest grid-alligned blockSize square */
+            Point roundP = new Point (((int)p.X / blockSize) * blockSize,  ((int)p.Y / blockSize) * blockSize);
+
+            /* Determine which zone is currently selected for drawing */
+            Zone curZone = Zones[selectedZone];
+
+            if (!curZone.isPointSelected(roundP))
+            {
+
+                /* Render the new point onto the current Zone's overlay */
+                using (var overlayGraphics = Graphics.FromImage(curZone.Image))
+                {
+                    overlayGraphics.FillRectangle(curZone.Brush, new Rectangle(roundP, new Size(blockSize, blockSize)));
+                }
+
+                curZone.addPoint(roundP);
+
+                /* Render all overlays onto the screen */
+                renderPoint(roundP);
+            }
+        }
+
+        /** Public function invoked to spawn a new Zone to be drawn onto the map */
+        public void addNewZone()
+        {
+            selectedZone = new Zone(map, Zones).getListIndex();
+        }
+
+        #region mapRender
+
+        /** Private helper function to render a newly drawn point onto the screen.
+         * Handles async refresh event of the PictureBox in the form */
+        private void renderPoint(Point pt)
+        {
+            /* Determine the size of the update rectangle */
+            Rectangle rect = new Rectangle(pt, new Size(blockSize, blockSize));
+            using (var screen = Graphics.FromImage(mapScreen))
+            {
+                /* Render the map with the given update area */
+                renderPointHelper(screen, map, rect);
+
+                /* Render every zone with the given update area */
+                foreach (Zone zone in Zones)
+                    renderPointHelper(screen, zone.Image, rect);
+            }
+
+            RpgEE.refreshMap();
+        }
+
+        private void renderPointHelper(Graphics screen, Image img, Rectangle rect)
+        {
+            screen.DrawImage(img, rect, rect, GraphicsUnit.Pixel);
+        }
+
+        /** Private helper function to re-render the whole map onto the screen.
+         * Handles async refresh event of the PictureBox in the form */
+        private void renderMap()
+        {
+            using (var screen = Graphics.FromImage(mapScreen))
+            {
+                /* Render the whole map's image */
+                renderMapHelper(screen, map);
+
+                /* Render every zone's entire overlay */
+                foreach (Zone zone in Zones)
+                    renderMapHelper(screen, zone.Image);
+            }
+
+            RpgEE.refreshMap();
+        }
+
+        private void renderMapHelper(Graphics screen, Image img)
+        {
+            screen.DrawImage(img, new Point(0, 0));
+        }
+#endregion
     }
 }

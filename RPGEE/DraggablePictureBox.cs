@@ -11,11 +11,13 @@ namespace RPGEE
     class DraggablePictureBox : PictureBox
     {
         private bool Dragging;
+        private bool Drawing;
         private int newTopPos;
         private int newLeftPos;
         private int maxRightPos;
         private int maxBottomPos;
         private readonly DragMousePosition mousePos;
+        private readonly Map map;
 
         private class DragMousePosition
         {
@@ -23,10 +25,9 @@ namespace RPGEE
             public int Y { get; set; }
         }
 
-        public DraggablePictureBox() : base()
+        public DraggablePictureBox(Map map) : base()
         {
-            Console.WriteLine("Called constructor");
-
+            this.map = map;
             mousePos = new DragMousePosition();
 
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OnMouseDown);
@@ -34,35 +35,53 @@ namespace RPGEE
             this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.OnMouseUp);
         }
 
+        /* Handles release of the mouse button */
         private void OnMouseUp(object sender, MouseEventArgs e)
         {
             Dragging = false;
+            Drawing = false;
         }
+
+        /* Handles mouse button clicking */
         private void OnMouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
-                Dragging = true;
-                mousePos.X = e.X;
-                mousePos.Y = e.Y;
+                if (map.status == Map.Status.Move)
+                {
+                    Dragging = true;
+                    mousePos.X = e.X;
+                    mousePos.Y = e.Y;
 
-                maxBottomPos = RpgEE.getMapHeight();
-                maxRightPos = RpgEE.getMapWidth();
+                    maxBottomPos = RpgEE.getMapHeight();
+                    maxRightPos = RpgEE.getMapWidth();
+                }
+                else if (map.status == Map.Status.Draw)
+                {
+                    Drawing = true;
+                }
             }
         }
 
         private void OnMouseMove(object sender, MouseEventArgs e)
         {
             Control c = sender as Control;
-            if (Dragging && c != null)
+            if (c != null)
             {
-                newTopPos = e.Y + c.Top - mousePos.Y;
-                if ((newTopPos < 0) && (newTopPos + c.Height > maxBottomPos))
-                    c.Top = newTopPos;
-                
-                newLeftPos = e.X + c.Left - mousePos.X;
-                if ((newLeftPos < 0) && (newLeftPos + c.Width > maxRightPos))
-                    c.Left = newLeftPos;
+                if (Dragging)
+                {
+                    newTopPos = e.Y + c.Top - mousePos.Y;
+                    if ((newTopPos < 0) && (newTopPos + c.Height > maxBottomPos))
+                        c.Top = newTopPos;
+
+                    newLeftPos = e.X + c.Left - mousePos.X;
+                    if ((newLeftPos < 0) && (newLeftPos + c.Width > maxRightPos))
+                        c.Left = newLeftPos;
+                }
+                else if (Drawing)
+                {
+                    RpgEE.map.drawPoint(new Point(e.X, e.Y));
+                }
             }
         }
     }

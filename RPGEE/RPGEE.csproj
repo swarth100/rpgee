@@ -81,6 +81,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Zone.cs" />
     <EmbeddedResource Include="RpgEE.resx">
       <DependentUpon>RpgEE.cs</DependentUpon>
     </EmbeddedResource>

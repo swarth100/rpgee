@@ -26,6 +26,12 @@ namespace RPGEE
             Custom
         }
 
+        /* Public elements */
+
+        /* Random generator */
+        public static Random RandomGenerator = new Random();
+        public static int ZoneID = 0;
+
         /** Login Screen UI Components
          *  Initialised within RpgEE() Constructor
          */
@@ -51,8 +57,16 @@ namespace RPGEE
          *  Initialised within RpgEE() Constructor
          */
         private static TableLayoutPanel mapTable;
+        private readonly TableLayoutPanel sideNavTable;
         public static PictureBox mapPct;
+        public static Map map;
         private static Label loadLbl;
+        private readonly TableLayoutPanel mapBtnTable;
+        private readonly Button moveMapBtn;
+        private readonly Button drawMapBtn;
+        private readonly Button fillMapBtn;
+        private readonly Button newMapBtn;
+        private readonly Button deleteMapBtn;
         private readonly Button backBtn;
         private readonly Button sideBtn;
         private readonly Button topBtn;
@@ -66,8 +80,10 @@ namespace RPGEE
         public RpgEE()
         {
             this.Text = "RpgEE";
-            this.Size = new Size(600, 400);
+            this.Size = new Size(650, 400);
             RpgEEForm = this;
+
+            #region loginLayout
 
             /** Generates a table to dock login Components
              * Table layout:
@@ -98,6 +114,10 @@ namespace RPGEE
             loginBtn = Generator<Button>.addObject(new Button() { Text = "login" }, loginTable, 1, 6);
             loginBtn.Click += new System.EventHandler(this.loginBtn_Click);
 
+            #endregion
+
+            #region homeLayout
+
             /** Generates a table to dock home Button Components
              * Table layout:
              * 
@@ -124,6 +144,10 @@ namespace RPGEE
             spritesBtn = Generator<Button>.addObject(new Button() { Text = "Sprites" }, homeTable, 1, 1);
             optionsBtn = Generator<Button>.addObject(new Button() { Text = "Options" }, homeTable, 2, 1);
 
+            #endregion
+
+            #region mapLayout
+
             /** Generates a table to dock map Button Components
              * Table layout:
              * 
@@ -136,14 +160,45 @@ namespace RPGEE
              * +-----+---------------------+ 
              */
             mapTable = Generator<TableLayoutPanel>.generateGeneralTable(this);
-            mapPct = new DraggablePictureBox();
-            // mapPct = Generator<PictureBox>.addDraggablePictureBox(new DraggablePictureBox(), mapTable, 1, 1);
+
+            /* Initialise the MAP */
+            map = new Map();
+
+            /* Initialise the map's draggable image and placeholder */
+            mapPct = new DraggablePictureBox(map);
             loadLbl = Generator<Label>.addObject(new Label() { Text = "Loading ...", TextAlign = ContentAlignment.MiddleCenter }, mapTable, 1, 1);
+
+            /* Initialise sideNav Components */
+            sideNavTable = Generator<TableLayoutPanel>.generateSideTable(2, 1);
+            Generator<TableLayoutPanel>.addObject(sideNavTable, mapTable, 0, 1);
+
+            // Temporary
+            sideBtn = Generator<Button>.addObject(new Button() { Text = "SideNav" }, sideNavTable, 0, 0);
+
+            /* Initialise mapButtons */
+            mapBtnTable = Generator<TableLayoutPanel>.generateButtonTable(1, 5);
+            Generator<TableLayoutPanel>.addObject(mapBtnTable, sideNavTable, 1, 0);
+
+            moveMapBtn = Generator<Button>.addObject(new Button() { Text = "M" }, mapBtnTable, 0, 0);
+            moveMapBtn.Click += new System.EventHandler(this.moveMapBtn_Click);
+
+            drawMapBtn = Generator<Button>.addObject(new Button() { Text = "D" }, mapBtnTable, 1, 0);
+            drawMapBtn.Click += new System.EventHandler(this.drawMapBtn_Click);
+
+            fillMapBtn = Generator<Button>.addObject(new Button() { Text = "F" }, mapBtnTable, 2, 0);
+            fillMapBtn.Click += new System.EventHandler(this.fillMapBtn_Click);
+
+            newMapBtn = Generator<Button>.addObject(new Button() { Text = "N" }, mapBtnTable, 3, 0);
+            newMapBtn.Click += new System.EventHandler(this.newMapBtn_Click);
+
+            deleteMapBtn = Generator<Button>.addObject(new Button() { Text = "R" }, mapBtnTable, 4, 0);
+            deleteMapBtn.Click += new System.EventHandler(this.deleteMapBtn_Click);
 
             /* Temporary button placeholders */
             backBtn = Generator<Button>.addObject(new Button() { Text = "Back" }, mapTable, 0, 0);
             topBtn = Generator<Button>.addObject(new Button() { Text = "RpgEE" }, mapTable, 1, 0);
-            sideBtn = Generator<Button>.addObject(new Button() { Text = "SideNav" }, mapTable, 0, 1);
+
+            #endregion
 
             /* Spawn computations thread, set it to background and run it */
             computationThread = new Thread(BackgroundThread.runComputationsThread);
@@ -178,6 +233,31 @@ namespace RPGEE
         void mapBtn_Click(object sender, EventArgs e)
         {
             RpgEE.showScreen(Layers.Map);
+        }
+
+        void moveMapBtn_Click(object sender, EventArgs e)
+        {
+            map.status = Map.Status.Move;
+        }
+
+        void drawMapBtn_Click(object sender, EventArgs e)
+        {
+            map.status = Map.Status.Draw;
+        }
+
+        void fillMapBtn_Click(object sender, EventArgs e)
+        {
+            map.status = Map.Status.Fill;
+        }
+
+        void newMapBtn_Click(object sender, EventArgs e)
+        {
+            map.addNewZone();
+        }
+
+        void deleteMapBtn_Click(object sender, EventArgs e)
+        {
+            map.status = Map.Status.Delete;
         }
 
         #endregion
@@ -256,6 +336,30 @@ namespace RPGEE
         public static void spawnMap()
         {
             RpgEE.SpawnMap(RpgEEForm, mapTable);
+        }
+
+        delegate void RefreshMapCallback(Form form);
+
+        private static void RefreshMap(Form form, PictureBox img)
+        {
+            /** InvokeRequired required compares the thread ID of the 
+             * calling thread to the thread ID of the creating thread. 
+             * If these threads are different, it returns true. */
+            if (img.InvokeRequired)
+            {
+                SpawnMapCallback cb = new SpawnMapCallback(SpawnMap);
+                form.Invoke(cb, new object[] { form, img });
+            }
+            else
+            {
+                /* Refresh the image */
+                img.Refresh();
+            }
+        }
+
+        public static void refreshMap()
+        {
+            RpgEE.RefreshMap(RpgEEForm, mapPct);
         }
 
         #endregion
