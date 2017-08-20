@@ -171,10 +171,18 @@ namespace RPGEE
             /* Initialise mapButtons */
             mapBtnTable = Generator<TableLayoutPanel>.generateButtonTable(1, 4);
             Generator<TableLayoutPanel>.addObject(mapBtnTable, sideNavTable, 1, 0);
+
             moveMapBtn = Generator<Button>.addObject(new Button() { Text = "M" }, mapBtnTable, 0, 0);
+            moveMapBtn.Click += new System.EventHandler(this.moveMapBtn_Click);
+
             drawMapBtn = Generator<Button>.addObject(new Button() { Text = "D" }, mapBtnTable, 1, 0);
+            drawMapBtn.Click += new System.EventHandler(this.drawMapBtn_Click);
+
             fillMapBtn = Generator<Button>.addObject(new Button() { Text = "F" }, mapBtnTable, 2, 0);
+            fillMapBtn.Click += new System.EventHandler(this.fillMapBtn_Click);
+
             deleteMapBtn = Generator<Button>.addObject(new Button() { Text = "R" }, mapBtnTable, 3, 0);
+            deleteMapBtn.Click += new System.EventHandler(this.deleteMapBtn_Click);
 
             /* Temporary button placeholders */
             backBtn = Generator<Button>.addObject(new Button() { Text = "Back" }, mapTable, 0, 0);
@@ -188,7 +196,7 @@ namespace RPGEE
             computationThread.Start();
 
             /* Debug */
-             RpgEE.showScreen(Layers.Home);
+            // RpgEE.showScreen(Layers.Home);
         }
 
         #region btnClicks
@@ -215,6 +223,26 @@ namespace RPGEE
         void mapBtn_Click(object sender, EventArgs e)
         {
             RpgEE.showScreen(Layers.Map);
+        }
+
+        void moveMapBtn_Click(object sender, EventArgs e)
+        {
+            map.status = Map.Status.Move;
+        }
+
+        void drawMapBtn_Click(object sender, EventArgs e)
+        {
+            map.status = Map.Status.Draw;
+        }
+
+        void fillMapBtn_Click(object sender, EventArgs e)
+        {
+            map.status = Map.Status.Fill;
+        }
+
+        void deleteMapBtn_Click(object sender, EventArgs e)
+        {
+            map.status = Map.Status.Delete;
         }
 
         #endregion
