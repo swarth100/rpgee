@@ -104,13 +104,12 @@ namespace RPGEE
             switch (i)
             {
                 case 0:
-                    value = 30F;
+                    value = 200;
+                    layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, value));
                     break;
                 default:
-                    value = 70F;
                     break;
             }
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, value));
         }
 
         /** Private helper function for a general component's table row generation
@@ -121,13 +120,12 @@ namespace RPGEE
             switch (i)
             {
                 case 0:
-                    value = 10F;
+                    value = 50;
+                    layout.RowStyles.Add(new RowStyle(SizeType.Absolute, value));
                     break;
                 default:
-                    value = 90F;
                     break;
             }
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, value));
         }
 
         #endregion
