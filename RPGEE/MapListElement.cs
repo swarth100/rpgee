@@ -8,6 +8,40 @@ using System.Windows.Forms;
 
 namespace RPGEE
 {
+    public class MapListLabel : Label
+    {
+        /* Public fields */
+        public Object ListParent { get; }
+
+        /* Private fields */
+        private int RowIndex { get; }
+        private ListViewEx List { get; }
+
+        /* Constructor */
+        public MapListLabel(ListViewEx list, Object parent, int index) : base()
+        {
+            ListParent = parent;
+            RowIndex = index;
+            List = list;
+
+            TextAlign = ContentAlignment.MiddleCenter;
+        }
+
+        #region btnClicks
+
+        /** Handles navBar name label click events
+         * The events must fire back onto the button's parent */
+        public static void nameLbl_Click(object sender, EventArgs e)
+        {
+            MapListLabel label = sender as MapListLabel;
+
+            RpgEE.map.changeSelectedZone((label.ListParent as Zone).getListIndex());
+        }
+
+        #endregion
+
+    }
+
     /** Public class which holds a reference to a number of fields for buttons inside the navList
          * Handles a number of UI interactions */
     public class MapListButton : Button
