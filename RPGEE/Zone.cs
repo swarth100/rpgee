@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace RPGEE
 {
@@ -12,6 +13,7 @@ namespace RPGEE
         /* Private fields */
         public Image Image { get; }
         public Brush Brush { get; }
+        public String Name { get; }
         private int ID { get; }
 
         private readonly List<Zone> zones;
@@ -24,11 +26,16 @@ namespace RPGEE
             this.Brush = new SolidBrush(getRandomColor());
             this.ID = RpgEE.ZoneID++;
 
+            this.Name = "Zone" + this.ID;
+
             /* Store a reference to the Zone's list */
             this.zones = list;
 
             /* Create the 2D array to store the data held by the overlay Zone */
             this.Data = new int[map.Width/Map.blockSize + 1, map.Height/Map.blockSize + 1];
+
+            /* */
+            Generator<Form>.addMapListItem(RpgEE.sideNavListView, this);
 
             /* Append the new element to the list of zones */
             list.Add(this);
