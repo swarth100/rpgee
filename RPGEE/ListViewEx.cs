@@ -50,6 +50,8 @@ namespace RPGEE
             }
 
             this.View = View.Details;
+
+            SetHeight(this, 25);
         }
 
         /// <summary>
@@ -278,6 +280,13 @@ namespace RPGEE
                     ec.Item.Selected = true;
                 }
             }
+        }
+
+        private void SetHeight(ListViewEx listView, int height)
+        {
+            ImageList imgList = new ImageList();
+            imgList.ImageSize = new Size(1, height);
+            listView.SmallImageList = imgList;
         }
     }
 }
