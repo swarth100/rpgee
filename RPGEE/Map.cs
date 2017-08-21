@@ -239,7 +239,7 @@ namespace RPGEE
 
             /* Initialise zones */
             Zone defaultZone = new Zone(img.Image, Zones);
-            selectedZone = defaultZone.getListIndex();
+            changeSelectedZone(defaultZone.getListIndex());
 
             /* Clone the new image as the map */
             map = new Bitmap(img.Image.Width, img.Image.Height);
@@ -341,7 +341,16 @@ namespace RPGEE
         /** Public function invoked to spawn a new Zone to be drawn onto the map */
         public void addNewZone()
         {
-            selectedZone = new Zone(map, Zones).getListIndex();
+            changeSelectedZone(new Zone(map, Zones).getListIndex());
+        }
+
+        public void changeSelectedZone(int newZone)
+        {
+            Zones[selectedZone].unselectBackground();
+
+            selectedZone = newZone;
+
+            Zones[selectedZone].selectBackground();
         }
 
         #region mapRender
