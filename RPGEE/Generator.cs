@@ -262,38 +262,30 @@ namespace RPGEE
             return obj;
         }
 
+        /** Public function to add and dock a new ListViewItem into a given ListViewEx(tended) list.
+         * The newly created object supports the Zone format for the Map screen of the Application */
         public static ListViewItem addMapListItem(ListViewEx list, Object obj)
         {
+            /* Creates a new empty Item and adds it normally to the list */
             ListViewItem listItem = new ListViewItem(new String[list.Columns.Count]);
             list.Items.Add(listItem);
 
             int rowCount = list.Items.Count - 1;
 
-            Label nameLbl = new Label() { Text = (obj as Zone).Name };
+            /* Custom field for the Name field */
+            Label nameLbl = new Label() { Text = (obj as Zone).Name, TextAlign = ContentAlignment.MiddleCenter };
             list.AddEmbeddedControl(nameLbl, 0, rowCount);
 
-            ListButton editBtn = new ListButton(obj) { Text = "Edit" };
-            editBtn.Click += new System.EventHandler(Generator<T>.editBtn_Click);
+            /* Custom field at index 1 contains the edit button */
+            MapListButton editBtn = new MapListButton(list, obj, rowCount) { Text = "Edit" };
+            editBtn.Click += MapListButton.editBtn_Click;
             list.AddEmbeddedControl(editBtn, 1, rowCount);
 
             return listItem;
         }
 
-        private class ListButton : Button
-        {
-            public  Object ListParent { get; }
+        #region listButton
 
-            public ListButton(Object parent) : base()
-            {
-                ListParent = parent;
-            }
-        }
-
-        static void editBtn_Click(object sender, EventArgs e)
-        {
-            ListButton button = sender as ListButton;
-
-            Console.WriteLine(((Zone)button.ListParent).Name);
-        }
+        #endregion
     }
 }
