@@ -97,6 +97,22 @@ namespace RPGEE
             List.AddEmbeddedControl(newCtrl, 0, RowIndex);
         }
 
+        /** Helper method to spawn a new ColorDialog */
+        private void spawnColorDialog()
+        {
+            ColorDialog MyDialog = new ColorDialog();
+            /* Keeps the user from selecting a custom color. */
+            MyDialog.AllowFullOpen = false;
+            /* Allows the user to get help. (The default is false.) */
+            MyDialog.ShowHelp = true;
+            /* Sets the initial color select to the current text color. */
+            MyDialog.Color = BackColor;
+
+            /* Update the text box color if the user clicks OK */
+            if (MyDialog.ShowDialog() == DialogResult.OK)
+                (ListParent as Zone).changeColor(MyDialog.Color);
+        }
+
         /* Handles a lose focus event for the ListItem's name editBox */
         private void editBox_LostFocus(object sender, EventArgs e)
         {
@@ -112,6 +128,13 @@ namespace RPGEE
             MapListButton button = sender as MapListButton;
 
             button.replaceLabel();
+        }
+
+        public static  void colorBtn_Click(object sender, System.EventArgs e)
+        {
+            MapListButton button = sender as MapListButton;
+
+            button.spawnColorDialog();
         }
 
         #endregion
