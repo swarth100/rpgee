@@ -281,7 +281,11 @@ namespace RPGEE
             MapListButton editBtn = new MapListButton(list, obj, rowCount) { Text = "Edit" };
             editBtn.Click += MapListButton.editBtn_Click;
             list.AddEmbeddedControl(editBtn, 1, rowCount);
-            
+
+            /* Custom field at index 2 contains the color picker button */
+            MapListButton colorBtn = new MapListButton(list, obj, rowCount) { BackColor = ((obj as Zone).Brush as SolidBrush).Color };
+            colorBtn.Click += MapListButton.colorBtn_Click;
+            list.AddEmbeddedControl(colorBtn, 2, rowCount);
 
             return listItem;
         }
