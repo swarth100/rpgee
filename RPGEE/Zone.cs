@@ -13,7 +13,7 @@ namespace RPGEE
         /* Private fields */
         public Image Image { get; }
         public Brush Brush { get; }
-        public String Name { get; }
+        public String Name { get; set; }
         private int ID { get; }
 
         private readonly List<Zone> zones;
