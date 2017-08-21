@@ -69,7 +69,6 @@ namespace RPGEE
         private readonly Button newMapBtn;
         private readonly Button deleteMapBtn;
         private readonly Button backBtn;
-        private readonly Button sideBtn;
         private readonly Button topBtn;
 
         /* General structures and data */
@@ -187,19 +186,19 @@ namespace RPGEE
             Generator<TableLayoutPanel>.addObject(mapBtnTable, sideNavTable, 1, 0);
 
             moveMapBtn = Generator<Button>.addObject(new Button() { Text = "M" }, mapBtnTable, 0, 0);
-            moveMapBtn.Click += new System.EventHandler(this.moveMapBtn_Click);
+            moveMapBtn.Click += this.moveMapBtn_Click;
 
             drawMapBtn = Generator<Button>.addObject(new Button() { Text = "D" }, mapBtnTable, 1, 0);
-            drawMapBtn.Click += new System.EventHandler(this.drawMapBtn_Click);
+            drawMapBtn.Click += this.drawMapBtn_Click;
 
             fillMapBtn = Generator<Button>.addObject(new Button() { Text = "F" }, mapBtnTable, 2, 0);
-            fillMapBtn.Click += new System.EventHandler(this.fillMapBtn_Click);
+            fillMapBtn.Click += this.fillMapBtn_Click;
 
             newMapBtn = Generator<Button>.addObject(new Button() { Text = "N" }, mapBtnTable, 3, 0);
-            newMapBtn.Click += new System.EventHandler(this.newMapBtn_Click);
+            newMapBtn.Click += this.newMapBtn_Click;
 
             deleteMapBtn = Generator<Button>.addObject(new Button() { Text = "R" }, mapBtnTable, 4, 0);
-            deleteMapBtn.Click += new System.EventHandler(this.deleteMapBtn_Click);
+            deleteMapBtn.Click += this.deleteMapBtn_Click;
 
             /* Temporary button placeholders */
             backBtn = Generator<Button>.addObject(new Button() { Text = "Back" }, mapTable, 0, 0);
