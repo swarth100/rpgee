@@ -273,13 +273,15 @@ namespace RPGEE
             int rowCount = list.Items.Count - 1;
 
             /* Custom field for the Name field */
-            Label nameLbl = new Label() { Text = (obj as Zone).Name, TextAlign = ContentAlignment.MiddleCenter };
+            MapListLabel nameLbl = new MapListLabel(list, obj, rowCount) { Text = (obj as Zone).Name };
+            nameLbl.Click += MapListLabel.nameLbl_Click;
             list.AddEmbeddedControl(nameLbl, 0, rowCount);
 
             /* Custom field at index 1 contains the edit button */
             MapListButton editBtn = new MapListButton(list, obj, rowCount) { Text = "Edit" };
             editBtn.Click += MapListButton.editBtn_Click;
             list.AddEmbeddedControl(editBtn, 1, rowCount);
+            
 
             return listItem;
         }
