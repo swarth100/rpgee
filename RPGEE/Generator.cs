@@ -261,5 +261,39 @@ namespace RPGEE
 
             return obj;
         }
+
+        public static ListViewItem addMapListItem(ListViewEx list, Object obj)
+        {
+            ListViewItem listItem = new ListViewItem(new String[list.Columns.Count]);
+            list.Items.Add(listItem);
+
+            int rowCount = list.Items.Count - 1;
+
+            Label nameLbl = new Label() { Text = (obj as Zone).Name };
+            list.AddEmbeddedControl(nameLbl, 0, rowCount);
+
+            ListButton editBtn = new ListButton(obj) { Text = "Edit" };
+            editBtn.Click += new System.EventHandler(Generator<T>.editBtn_Click);
+            list.AddEmbeddedControl(editBtn, 1, rowCount);
+
+            return listItem;
+        }
+
+        private class ListButton : Button
+        {
+            public  Object ListParent { get; }
+
+            public ListButton(Object parent) : base()
+            {
+                ListParent = parent;
+            }
+        }
+
+        static void editBtn_Click(object sender, EventArgs e)
+        {
+            ListButton button = sender as ListButton;
+
+            Console.WriteLine(((Zone)button.ListParent).Name);
+        }
     }
 }
