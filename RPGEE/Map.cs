@@ -344,6 +344,7 @@ namespace RPGEE
             changeSelectedZone(new Zone(map, Zones).getListIndex());
         }
 
+        /** Public function invoked by clicking on a Zone's Name Label */
         public void changeSelectedZone(int newZone)
         {
             Zones[selectedZone].unselectBackground();
