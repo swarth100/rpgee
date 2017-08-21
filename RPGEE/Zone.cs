@@ -61,6 +61,18 @@ namespace RPGEE
             setDataHelper(pt, 0);
         }
 
+        public void selectBackground()
+        {
+            Label name = (Label) RpgEE.sideNavListView.GetEmbeddedControl(0, this.getListIndex());
+            name.BackColor = Color.CornflowerBlue;
+        }
+
+        public void unselectBackground()
+        {
+            Label name = (Label)RpgEE.sideNavListView.GetEmbeddedControl(0, this.getListIndex());
+            name.BackColor = Color.Transparent;
+        }
+
         private void setDataHelper (Point pt, int x)
         {
             Data[pt.X / Map.blockSize, pt.Y / Map.blockSize] = x;
