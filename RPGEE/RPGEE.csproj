@@ -78,6 +78,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Map.cs" />
+    <Compile Include="MapListElement.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Player.cs" />
     <Compile Include="RpgEE.cs">
       <SubType>Form</SubType>
