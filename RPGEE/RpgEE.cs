@@ -59,6 +59,7 @@ namespace RPGEE
         private static TableLayoutPanel mapTable;
         private readonly TableLayoutPanel sideNavTable;
         public static PictureBox mapPct;
+        public static ListViewEx sideNavListView;
         public static Map map;
         private static Label loadLbl;
         private readonly TableLayoutPanel mapBtnTable;
@@ -173,7 +174,13 @@ namespace RPGEE
             Generator<TableLayoutPanel>.addObject(sideNavTable, mapTable, 0, 1);
 
             // Temporary
-            sideBtn = Generator<Button>.addObject(new Button() { Text = "SideNav" }, sideNavTable, 0, 0);
+            // sideBtn = Generator<Button>.addObject(new Button() { Text = "SideNav" }, sideNavTable, 0, 0);
+
+            sideNavListView = Generator<ListViewEx>.addObject(new ListViewEx(new[] { "Zone", "Edit", "Color", "Remove" }), sideNavTable, 0, 0);
+
+            // sideView.Items.Add(new ListViewItem(new[] { "id123", "Tom", "24", "lel" }));
+            // sideView.Items.Add(new ListViewItem(new[] { "id123", "Tom", "24", "lel" }));
+            // sideView.AddEmbeddedControl(new Button() { Text = "Btn" }, 1, 1);
 
             /* Initialise mapButtons */
             mapBtnTable = Generator<TableLayoutPanel>.generateButtonTable(1, 5);
