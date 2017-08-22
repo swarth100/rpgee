@@ -58,17 +58,18 @@ namespace RPGEE
          */
         private static TableLayoutPanel mapTable;
         private readonly TableLayoutPanel sideNavTable;
-        public static PictureBox mapPct;
+        public static ListViewEx sideNavListView;
         public static Map map;
         private static Label loadLbl;
-        private readonly TableLayoutPanel mapBtnTable;
+        private readonly TableLayoutPanel mapBtnTable1;
+        private readonly TableLayoutPanel mapBtnTable2;
         private readonly Button moveMapBtn;
         private readonly Button drawMapBtn;
-        private readonly Button fillMapBtn;
+        private readonly Button inspectMapBtn;
         private readonly Button newMapBtn;
+        private readonly Button newPinMapBtn;
         private readonly Button deleteMapBtn;
         private readonly Button backBtn;
-        private readonly Button sideBtn;
         private readonly Button topBtn;
 
         /* General structures and data */
@@ -80,7 +81,7 @@ namespace RPGEE
         public RpgEE()
         {
             this.Text = "RpgEE";
-            this.Size = new Size(650, 400);
+            this.Size = new Size(650, 450);
             RpgEEForm = this;
 
             #region loginLayout
@@ -163,36 +164,48 @@ namespace RPGEE
 
             /* Initialise the MAP */
             map = new Map();
+            map.setPictureBox(new DraggablePictureBox(map));
 
             /* Initialise the map's draggable image and placeholder */
-            mapPct = new DraggablePictureBox(map);
             loadLbl = Generator<Label>.addObject(new Label() { Text = "Loading ...", TextAlign = ContentAlignment.MiddleCenter }, mapTable, 1, 1);
 
             /* Initialise sideNav Components */
-            sideNavTable = Generator<TableLayoutPanel>.generateSideTable(2, 1);
+            sideNavTable = Generator<TableLayoutPanel>.generateSideTable(3, 1);
             Generator<TableLayoutPanel>.addObject(sideNavTable, mapTable, 0, 1);
 
-            // Temporary
-            sideBtn = Generator<Button>.addObject(new Button() { Text = "SideNav" }, sideNavTable, 0, 0);
+            sideNavListView = Generator<ListViewEx>.addObject(new ListViewEx(new[] { "Name", "Type", "Edit", "Color", "Show", "Remove" }), sideNavTable, 0, 0);
 
             /* Initialise mapButtons */
-            mapBtnTable = Generator<TableLayoutPanel>.generateButtonTable(1, 5);
-            Generator<TableLayoutPanel>.addObject(mapBtnTable, sideNavTable, 1, 0);
+            mapBtnTable1 = Generator<TableLayoutPanel>.generateButtonTable(1, 5);
+            Generator<TableLayoutPanel>.addObject(mapBtnTable1, sideNavTable, 1, 0);
 
-            moveMapBtn = Generator<Button>.addObject(new Button() { Text = "M" }, mapBtnTable, 0, 0);
-            moveMapBtn.Click += new System.EventHandler(this.moveMapBtn_Click);
+            mapBtnTable2 = Generator<TableLayoutPanel>.generateButtonTable(1, 5);
+            Generator<TableLayoutPanel>.addObject(mapBtnTable2, sideNavTable, 2, 0);
 
-            drawMapBtn = Generator<Button>.addObject(new Button() { Text = "D" }, mapBtnTable, 1, 0);
-            drawMapBtn.Click += new System.EventHandler(this.drawMapBtn_Click);
+            moveMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.moveBtnImage },
+                mapBtnTable1, 0, 0);
+            moveMapBtn.Click += this.moveMapBtn_Click;
 
-            fillMapBtn = Generator<Button>.addObject(new Button() { Text = "F" }, mapBtnTable, 2, 0);
-            fillMapBtn.Click += new System.EventHandler(this.fillMapBtn_Click);
+            drawMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.drawBtnImage },
+                mapBtnTable1, 1, 0);
+            drawMapBtn.Click += this.drawMapBtn_Click;
 
-            newMapBtn = Generator<Button>.addObject(new Button() { Text = "N" }, mapBtnTable, 3, 0);
-            newMapBtn.Click += new System.EventHandler(this.newMapBtn_Click);
+            inspectMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.inspectBtnImage },
+                mapBtnTable1, 2, 0);
+            inspectMapBtn.Click += this.inspectMapBtn_Click;
 
-            deleteMapBtn = Generator<Button>.addObject(new Button() { Text = "R" }, mapBtnTable, 4, 0);
-            deleteMapBtn.Click += new System.EventHandler(this.deleteMapBtn_Click);
+            deleteMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.eraseBtnImage },
+                mapBtnTable1, 3, 0);
+            deleteMapBtn.Click += this.deleteMapBtn_Click;
+
+            /* Initialise second level of buttons */
+            newPinMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.addBtnImage },
+                mapBtnTable2, 0, 0);
+            // newMapBtn.Click += this.newMapBtn_Click;
+
+            newMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.newBtnImage },
+                mapBtnTable2, 1, 0);
+            newMapBtn.Click += this.newMapBtn_Click;
 
             /* Temporary button placeholders */
             backBtn = Generator<Button>.addObject(new Button() { Text = "Back" }, mapTable, 0, 0);
@@ -237,17 +250,17 @@ namespace RPGEE
 
         void moveMapBtn_Click(object sender, EventArgs e)
         {
-            map.status = Map.Status.Move;
+            changeMapStatus(Map.Status.Move);
         }
 
         void drawMapBtn_Click(object sender, EventArgs e)
         {
-            map.status = Map.Status.Draw;
+            changeMapStatus(Map.Status.Draw);
         }
 
-        void fillMapBtn_Click(object sender, EventArgs e)
+        void inspectMapBtn_Click(object sender, EventArgs e)
         {
-            map.status = Map.Status.Fill;
+            changeMapStatus(Map.Status.Inspect);
         }
 
         void newMapBtn_Click(object sender, EventArgs e)
@@ -257,7 +270,7 @@ namespace RPGEE
 
         void deleteMapBtn_Click(object sender, EventArgs e)
         {
-            map.status = Map.Status.Delete;
+            changeMapStatus(Map.Status.Delete);
         }
 
         #endregion
@@ -329,7 +342,7 @@ namespace RPGEE
             {
                 /* Substitute the load placeholder label with the new image */
                 panel.Controls.Remove(loadLbl);
-                Generator<PictureBox>.addDraggablePictureBox((DraggablePictureBox)mapPct, panel, 1, 1);
+                Generator<PictureBox>.addDraggablePictureBox((DraggablePictureBox)map.PictureBox, panel, 1, 1);
             }
         }
 
@@ -338,16 +351,16 @@ namespace RPGEE
             RpgEE.SpawnMap(RpgEEForm, mapTable);
         }
 
-        delegate void RefreshMapCallback(Form form);
+        delegate void RefreshMapCallback(Form form, DraggablePictureBox img);
 
-        private static void RefreshMap(Form form, PictureBox img)
+        private static void RefreshMap(Form form, DraggablePictureBox img)
         {
             /** InvokeRequired required compares the thread ID of the 
              * calling thread to the thread ID of the creating thread. 
              * If these threads are different, it returns true. */
             if (img.InvokeRequired)
             {
-                SpawnMapCallback cb = new SpawnMapCallback(SpawnMap);
+                RefreshMapCallback cb = new RefreshMapCallback(RefreshMap);
                 form.Invoke(cb, new object[] { form, img });
             }
             else
@@ -359,7 +372,7 @@ namespace RPGEE
 
         public static void refreshMap()
         {
-            RpgEE.RefreshMap(RpgEEForm, mapPct);
+            RpgEE.RefreshMap(RpgEEForm, map.PictureBox);
         }
 
         #endregion
@@ -372,6 +385,19 @@ namespace RPGEE
         public static int getMapWidth()
         {
             return mapTable.GetControlFromPosition(1, 1).Right - mapTable.GetControlFromPosition(1, 1).Left;
+        }
+
+        private void changeMapStatus(Map.Status newStatus)
+        {
+            map.PictureBox.Inspecting = false;
+            map.status = newStatus;
+
+            switch (newStatus)
+            {
+                case Map.Status.Inspect:
+                    map.PictureBox.Inspecting = true;
+                    break;
+            }
         }
     }
 }

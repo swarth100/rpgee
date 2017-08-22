@@ -8,27 +8,42 @@ using System.Windows.Forms;
 
 namespace RPGEE
 {
-    class DraggablePictureBox : PictureBox
+    public class DraggablePictureBox : PictureBox
     {
         private bool Dragging;
         private bool Drawing;
+        private bool Erasing;
+        public bool Inspecting { get; set; }
         private int newTopPos;
         private int newLeftPos;
         private int maxRightPos;
         private int maxBottomPos;
         private readonly DragMousePosition mousePos;
+        private readonly DragMousePosition mouseDrag;
         private readonly Map map;
 
+        private readonly ToolTip inspectTt;
+
+        /** Helper class to keep track of a mouse's position */
         private class DragMousePosition
         {
             public int X { get; set; }
             public int Y { get; set; }
+
+            public void updatePosition(MouseEventArgs e)
+            {
+                X = e.X;
+                Y = e.Y;
+            }
         }
 
         public DraggablePictureBox(Map map) : base()
         {
             this.map = map;
+
+            inspectTt = new ToolTip();
             mousePos = new DragMousePosition();
+            mouseDrag = new DragMousePosition();
 
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OnMouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.OnMouseMove);
@@ -40,6 +55,7 @@ namespace RPGEE
         {
             Dragging = false;
             Drawing = false;
+            Erasing = false;
         }
 
         /* Handles mouse button clicking */
@@ -50,8 +66,9 @@ namespace RPGEE
                 if (map.status == Map.Status.Move)
                 {
                     Dragging = true;
-                    mousePos.X = e.X;
-                    mousePos.Y = e.Y;
+
+                    mousePos.updatePosition(e);
+                    mouseDrag.updatePosition(e);
 
                     maxBottomPos = RpgEE.getMapHeight();
                     maxRightPos = RpgEE.getMapWidth();
@@ -60,16 +77,24 @@ namespace RPGEE
                 {
                     Drawing = true;
                 }
+                else if (map.status == Map.Status.Delete)
+                {
+                    Erasing = true;
+                }
             }
         }
 
+        /** Method to handle mouse movement */
         private void OnMouseMove(object sender, MouseEventArgs e)
         {
             Control c = sender as Control;
-            if (c != null)
+
+            if (c != null && (mouseDrag.X != e.X || mouseDrag.Y != e.Y))
             {
+                /* Checks that the given movement occurs during one of the handled drag events */
                 if (Dragging)
                 {
+                    /* This event will move around the DraggableImage which is the map */
                     newTopPos = e.Y + c.Top - mousePos.Y;
                     if ((newTopPos < 0) && (newTopPos + c.Height > maxBottomPos))
                         c.Top = newTopPos;
@@ -80,8 +105,22 @@ namespace RPGEE
                 }
                 else if (Drawing)
                 {
+                    /* This event will draw new Zone's points onto the map */
                     RpgEE.map.drawPoint(new Point(e.X, e.Y));
                 }
+                else if (Erasing)
+                {
+                    /* This event will erase a Zone's point from the map */
+                    RpgEE.map.erasePoint(new Point(e.X, e.Y));
+                }
+                else if (Inspecting)
+                {
+                    /* This event inspects the tiles present on the map */
+                    RpgEE.map.showTooltip(new Point(e.X, e.Y));
+                }
+
+                /* Update the saved position of the dragged mouse */
+                mouseDrag.updatePosition(e);
             }
         }
     }

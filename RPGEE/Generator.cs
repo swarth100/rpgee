@@ -169,6 +169,7 @@ namespace RPGEE
                     layout.RowStyles.Add(new RowStyle(SizeType.Percent, value));
                     break;
                 case 1:
+                case 2:
                     value = 50;
                     layout.RowStyles.Add(new RowStyle(SizeType.Absolute, value));
                     break;
@@ -261,5 +262,54 @@ namespace RPGEE
 
             return obj;
         }
+
+        /** Public function to add and dock a new ListViewItem into a given ListViewEx(tended) list.
+         * The newly created object supports the Zone format for the Map screen of the Application */
+        public static ListViewItem addMapListItem(ListViewEx list, MapElement obj)
+        {
+            /* Creates a new empty Item and adds it normally to the list */
+            ListViewItem listItem = new ListViewItem(new String[list.Columns.Count]);
+            list.Items.Add(listItem);
+
+            int rowCount = list.Items.Count - 1;
+
+            /* Custom field for the Name field */
+            addListViewControl(new MapListLabel(list, obj) { Text = obj.Name },
+                MapListLabel.nameLbl_Click, list, ListViewEx.nameIndex, rowCount);
+
+            /* Custom field at index 1 for the Type of input */
+            addListViewControl(new MapListLabel(list, obj) { Text = obj.Type },
+                MapListLabel.nameLbl_Click, list, ListViewEx.typeIndex, rowCount);
+
+            /* Custom field at index 2 contains the edit button */
+            addListViewControl(new MapListButton(list, obj) { Text = "Edit" },
+                MapListButton.editBtn_Click, list, ListViewEx.editIndex, rowCount);
+
+            /* Custom field at index 3 contains the color picker button */
+            addListViewControl(new MapListButton(list, obj) { BackColor = (obj.Brush as SolidBrush).Color },
+                MapListButton.colorBtn_Click, list, ListViewEx.colorIndex, rowCount);
+
+            /* Custom field at index 4 for the Checkbox (for selection) */
+            addListViewControl(new MapListButton(list, obj) { Image = Properties.Resources.checkboxBtnImage },
+                MapListButton.selectedBtn_Click, list, ListViewEx.showIndex, rowCount);
+
+            /* Custom field at index 5 for the Checkbox (for selection) */
+            addListViewControl(new MapListButton(list, obj) { Image = Properties.Resources.binBtnImage }, 
+                MapListButton.binBtn_Click, list, ListViewEx.removeIndex, rowCount);
+
+            return listItem;
+        }
+
+        /** Private helper function to link ClickEvents to Controls.
+         * It also adds the given Controls to the Extended ListView in the correct cell */
+        private static void addListViewControl(Control btn, EventHandler click, ListViewEx list, int col, int row)
+        {
+            btn.Click += click;
+            list.AddEmbeddedControl(btn, col, row);
+        }
+
+        #region listButton
+
+        #endregion
     }
 }

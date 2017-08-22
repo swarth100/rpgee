@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,7 +15,7 @@ namespace RPGEE
         {
             Move,
             Draw,
-            Fill,
+            Inspect,
             Delete
         }
 
@@ -22,6 +23,7 @@ namespace RPGEE
 
         /* Edit status for the map */
         public Status status { get; set; }
+        public DraggablePictureBox PictureBox { get; set; }
 
         #region blockIds
 
@@ -164,6 +166,7 @@ namespace RPGEE
         public static int blockSize = 16;
         private static int[] backgroundRef = new int[2000];
         private static int[] foregroundRef = new int[2000];
+        private readonly ToolTip inspectTt;
 
         /* Image resource references */
         private static Image frontImage = Properties.Resources.BLOCKS_front;
@@ -176,7 +179,7 @@ namespace RPGEE
         private static Image map;
 
         /* Zones */
-        private List<Zone> Zones = new List<Zone>();
+        private List<MapElement> MapElements = new List<MapElement>();
         private int selectedZone;
 
         /** Initialise a new map instance */
@@ -222,27 +225,34 @@ namespace RPGEE
             }
 
             #endregion
+
+            inspectTt = new ToolTip();
+        }
+
+        public void setPictureBox(DraggablePictureBox img)
+        {
+            PictureBox = img;
         }
 
         /** Public method to initialise the map Image
          * The rendered map is also placed on the screen */
-        public void loadMap (PictureBox img)
+        public void loadMap ()
         {
             #region imgInit
 
             /* Generate a new image */
-            img.Image = new Bitmap(BackgroundThread.width * blockSize, BackgroundThread.height * blockSize);
-            img.Size = new Size(img.Image.Width, img.Image.Height);
+            PictureBox.Image = new Bitmap(BackgroundThread.width * blockSize, BackgroundThread.height * blockSize);
+            PictureBox.Size = new Size(PictureBox.Image.Width, PictureBox.Image.Height);
 
             /* Save the image's screen */
-            mapScreen = img.Image;
+            mapScreen = PictureBox.Image;
 
             /* Initialise zones */
-            Zone defaultZone = new Zone(img.Image, Zones);
-            selectedZone = defaultZone.getListIndex();
+            MapZone defaultZone = new MapZone(PictureBox.Image, MapElements);
+            changeSelectedZone(defaultZone.getListIndex());
 
             /* Clone the new image as the map */
-            map = new Bitmap(img.Image.Width, img.Image.Height);
+            map = new Bitmap(PictureBox.Image.Width, PictureBox.Image.Height);
 
             /* Initialise status to Move mode */
             status = Status.Move;
@@ -312,36 +322,94 @@ namespace RPGEE
             }
         }
 
-        /** Public function invoked during a Draw Event to the screen.
-         * Map must be in Draw Status and cursor can be dragged */
+        #region mapDrawing
+
         public void drawPoint(Point p)
         {
+            drawPointHelper(p, true);
+        }
+
+        public void erasePoint(Point p)
+        {
+            drawPointHelper(p, false);
+        }
+
+        /** Private function invoked during a Draw Event to the screen. Can both draw or erase.
+         * Map must be in Draw/Erase Status and cursor can be dragged */
+        private void drawPointHelper(Point p, bool draw)
+        {
             /* Round the given cursor point to the nearest grid-alligned blockSize square */
-            Point roundP = new Point (((int)p.X / blockSize) * blockSize,  ((int)p.Y / blockSize) * blockSize);
+            Point roundP = getRoundPoint(p);
 
             /* Determine which zone is currently selected for drawing */
-            Zone curZone = Zones[selectedZone];
+            MapZone curZone = (MapElements[selectedZone] as MapZone);
 
-            if (!curZone.isPointSelected(roundP))
+            bool drawnPoint = curZone.isPointSelected(roundP);
+
+            /* Check if the given MapZone has been set to visible and is drawable */
+            if (curZone.Visible && ((!drawnPoint && draw) || (drawnPoint && !draw)))
             {
-
                 /* Render the new point onto the current Zone's overlay */
                 using (var overlayGraphics = Graphics.FromImage(curZone.Image))
                 {
-                    overlayGraphics.FillRectangle(curZone.Brush, new Rectangle(roundP, new Size(blockSize, blockSize)));
+                    /* Conditionally draw or erase to the Image */
+                    if (draw)
+                        overlayGraphics.FillRectangle(curZone.Brush, new Rectangle(roundP, new Size(blockSize, blockSize)));
+                    else
+                        removeBitmapRegion(roundP, curZone);
                 }
 
-                curZone.addPoint(roundP);
+                /* Conditionally draw or erase to the DataMap */
+                if (draw)
+                    curZone.addPoint(roundP);
+                else
+                    curZone.removePoint(roundP);
 
                 /* Render all overlays onto the screen */
                 renderPoint(roundP);
             }
         }
 
+        /** Helper function to round a given to the nearest blockSize pixel */
+        private Point getRoundPoint(Point p)
+        {
+            return new Point(((int)p.X / blockSize) * blockSize, ((int)p.Y / blockSize) * blockSize);
+        }
+
+        /** Helper method to erase a region (the size of a square blockSize) from a given zone's image
+         * It iterates and removes every single pixel */
+        private void removeBitmapRegion(Point pt, MapZone curZone)
+        {
+            for (int i = 0; i < blockSize; i++)
+                for (int j = 0; j < blockSize; j++)
+                    (curZone.Image as Bitmap).SetPixel(pt.X + i, pt.Y + j, Color.Empty);
+        }
+
+        #endregion
+
         /** Public function invoked to spawn a new Zone to be drawn onto the map */
         public void addNewZone()
         {
-            selectedZone = new Zone(map, Zones).getListIndex();
+            changeSelectedZone(new MapZone(map, MapElements).getListIndex());
+        }
+
+        /** Public function invoked by clicking on a Zone's Name Label */
+        public void changeSelectedZone(int newZone)
+        {
+            (MapElements[selectedZone] as MapZone).unselectBackground();
+
+            selectedZone = newZone;
+
+            (MapElements[selectedZone] as MapZone).selectBackground();
+        }
+
+        /** Helper method to show the tooltip overlay onto the map */
+        public void showTooltip (Point pt)
+        {
+            Point roundPt = getRoundPoint(pt);
+            String text = "X: " + roundPt.X/16 + ", Y: " + roundPt.Y/16;
+
+            inspectTt.SetToolTip(PictureBox, text);
         }
 
         #region mapRender
@@ -358,7 +426,7 @@ namespace RPGEE
                 renderPointHelper(screen, map, rect);
 
                 /* Render every zone with the given update area */
-                foreach (Zone zone in Zones)
+                foreach (MapZone zone in MapElements)
                     renderPointHelper(screen, zone.Image, rect);
             }
 
@@ -372,7 +440,15 @@ namespace RPGEE
 
         /** Private helper function to re-render the whole map onto the screen.
          * Handles async refresh event of the PictureBox in the form */
-        private void renderMap()
+        public void renderMap()
+        {
+            lock (BackgroundThread._activityLock)
+            {
+                BackgroundThread.activityQueue.Enqueue(new BackgroundThread.ActionEvent(BackgroundThread.Actions.RenderMap, null));
+            }
+        }
+
+        public void renderMapBackground()
         {
             using (var screen = Graphics.FromImage(mapScreen))
             {
@@ -380,11 +456,18 @@ namespace RPGEE
                 renderMapHelper(screen, map);
 
                 /* Render every zone's entire overlay */
-                foreach (Zone zone in Zones)
-                    renderMapHelper(screen, zone.Image);
+                foreach (MapZone zone in MapElements)
+                    if (zone.Visible)
+                        renderMapHelper(screen, zone.Image);
             }
 
             RpgEE.refreshMap();
+        }
+
+        public void resetSelectedZone(int x)
+        {
+            if (selectedZone == x || selectedZone == RpgEE.sideNavListView.Items.Count - 1)
+                changeSelectedZone(0);
         }
 
         private void renderMapHelper(Graphics screen, Image img)

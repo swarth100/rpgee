@@ -9,11 +9,12 @@ using EEPhysics;
 
 namespace RPGEE
 {
-    class BackgroundThread
+    public class BackgroundThread
     {
         public enum Actions
         {
             None,
+            RenderMap,
             InitParse,
         }
 
@@ -84,6 +85,9 @@ namespace RPGEE
                     {
                         case Actions.None:
                             break;
+                        case Actions.RenderMap:
+                            RpgEE.map.renderMapBackground();
+                            break;
                         case Actions.InitParse:
                             /** InitParse is the action meant to parse the world data dumped by an "init" even when joining a world.
                              * Successful InitParse completion will trigger the rendering of the main Map image. */
@@ -110,7 +114,7 @@ namespace RPGEE
                             }
 
                             /* Force initial map async rendering */
-                            RpgEE.map.loadMap(RpgEE.mapPct);
+                            RpgEE.map.loadMap();
 
                             break;
                     }
