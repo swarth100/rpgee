@@ -24,6 +24,7 @@ namespace RPGEE
 
         private readonly ToolTip inspectTt;
 
+        /** Helper class to keep track of a mouse's position */
         private class DragMousePosition
         {
             public int X { get; set; }
@@ -83,14 +84,17 @@ namespace RPGEE
             }
         }
 
+        /** Method to handle mouse movement */
         private void OnMouseMove(object sender, MouseEventArgs e)
         {
             Control c = sender as Control;
 
             if (c != null && (mouseDrag.X != e.X || mouseDrag.Y != e.Y))
             {
+                /* Checks that the given movement occurs during one of the handled drag events */
                 if (Dragging)
                 {
+                    /* This event will move around the DraggableImage which is the map */
                     newTopPos = e.Y + c.Top - mousePos.Y;
                     if ((newTopPos < 0) && (newTopPos + c.Height > maxBottomPos))
                         c.Top = newTopPos;
@@ -101,17 +105,21 @@ namespace RPGEE
                 }
                 else if (Drawing)
                 {
+                    /* This event will draw new Zone's points onto the map */
                     RpgEE.map.drawPoint(new Point(e.X, e.Y));
                 }
                 else if (Erasing)
                 {
+                    /* This event will erase a Zone's point from the map */
                     RpgEE.map.erasePoint(new Point(e.X, e.Y));
                 }
                 else if (Inspecting)
                 {
+                    /* This event inspects the tiles present on the map */
                     RpgEE.map.showTooltip(new Point(e.X, e.Y));
                 }
 
+                /* Update the saved position of the dragged mouse */
                 mouseDrag.updatePosition(e);
             }
         }
