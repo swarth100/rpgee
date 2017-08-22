@@ -265,7 +265,7 @@ namespace RPGEE
 
         /** Public function to add and dock a new ListViewItem into a given ListViewEx(tended) list.
          * The newly created object supports the Zone format for the Map screen of the Application */
-        public static ListViewItem addMapListItem(ListViewEx list, Object obj)
+        public static ListViewItem addMapListItem(ListViewEx list, MapElement obj)
         {
             /* Creates a new empty Item and adds it normally to the list */
             ListViewItem listItem = new ListViewItem(new String[list.Columns.Count]);
@@ -274,36 +274,38 @@ namespace RPGEE
             int rowCount = list.Items.Count - 1;
 
             /* Custom field for the Name field */
-            MapListLabel nameLbl = new MapListLabel(list, obj) { Text = (obj as Zone).Name };
-            nameLbl.Click += MapListLabel.nameLbl_Click;
-            list.AddEmbeddedControl(nameLbl, ListViewEx.nameIndex, rowCount);
+            addListViewControl(new MapListLabel(list, obj) { Text = obj.Name },
+                MapListLabel.nameLbl_Click, list, ListViewEx.nameIndex, rowCount);
 
             /* Custom field at index 1 for the Type of input */
-            MapListLabel typeLbl = new MapListLabel(list, obj) { Text = "Zone" };
-            typeLbl.Click += MapListLabel.nameLbl_Click;
-            list.AddEmbeddedControl(typeLbl, ListViewEx.typeIndex, rowCount);
+            addListViewControl(new MapListLabel(list, obj) { Text = obj.Type },
+                MapListLabel.nameLbl_Click, list, ListViewEx.typeIndex, rowCount);
 
             /* Custom field at index 2 contains the edit button */
-            MapListButton editBtn = new MapListButton(list, obj) { Text = "Edit" };
-            editBtn.Click += MapListButton.editBtn_Click;
-            list.AddEmbeddedControl(editBtn, ListViewEx.editIndex, rowCount);
+            addListViewControl(new MapListButton(list, obj) { Text = "Edit" },
+                MapListButton.editBtn_Click, list, ListViewEx.editIndex, rowCount);
 
             /* Custom field at index 3 contains the color picker button */
-            MapListButton colorBtn = new MapListButton(list, obj) { BackColor = ((obj as Zone).Brush as SolidBrush).Color };
-            colorBtn.Click += MapListButton.colorBtn_Click;
-            list.AddEmbeddedControl(colorBtn, ListViewEx.colorIndex, rowCount);
+            addListViewControl(new MapListButton(list, obj) { BackColor = (obj.Brush as SolidBrush).Color },
+                MapListButton.colorBtn_Click, list, ListViewEx.colorIndex, rowCount);
 
             /* Custom field at index 4 for the Checkbox (for selection) */
-            MapListButton selectedBtn = new MapListButton(list, obj) { Image = Properties.Resources.checkboxBtnImage };
-            selectedBtn.Click += MapListButton.selectedBtn_Click;
-            list.AddEmbeddedControl(selectedBtn, ListViewEx.showIndex, rowCount);
+            addListViewControl(new MapListButton(list, obj) { Image = Properties.Resources.checkboxBtnImage },
+                MapListButton.selectedBtn_Click, list, ListViewEx.showIndex, rowCount);
 
-            /* Custom field at index 4 for the Checkbox (for selection) */
-            MapListButton binBtn = new MapListButton(list, obj) { Image = Properties.Resources.binBtnImage };
-            binBtn.Click += MapListButton.binBtn_Click;
-            list.AddEmbeddedControl(binBtn, ListViewEx.removeIndex, rowCount);
+            /* Custom field at index 5 for the Checkbox (for selection) */
+            addListViewControl(new MapListButton(list, obj) { Image = Properties.Resources.binBtnImage }, 
+                MapListButton.binBtn_Click, list, ListViewEx.removeIndex, rowCount);
 
             return listItem;
+        }
+
+        /** Private helper function to link ClickEvents to Controls.
+         * It also adds the given Controls to the Extended ListView in the correct cell */
+        private static void addListViewControl(Control btn, EventHandler click, ListViewEx list, int col, int row)
+        {
+            btn.Click += click;
+            list.AddEmbeddedControl(btn, col, row);
         }
 
         #region listButton
