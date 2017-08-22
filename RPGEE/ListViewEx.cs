@@ -27,6 +27,13 @@ namespace RPGEE
         private const int WM_PAINT = 0x000F;
         #endregion
 
+        public static readonly int nameIndex = 0;
+        public static readonly int typeIndex = 1;
+        public static readonly int editIndex = 2;
+        public static readonly int colorIndex = 3;
+        public static readonly int showIndex = 4;
+        public static readonly int removeIndex = 5;
+
         /// <summary>
         /// Structure to hold an embedded control's info
         /// </summary>
