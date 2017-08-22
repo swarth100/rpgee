@@ -169,6 +169,7 @@ namespace RPGEE
                     layout.RowStyles.Add(new RowStyle(SizeType.Percent, value));
                     break;
                 case 1:
+                case 2:
                     value = 50;
                     layout.RowStyles.Add(new RowStyle(SizeType.Absolute, value));
                     break;
@@ -273,19 +274,34 @@ namespace RPGEE
             int rowCount = list.Items.Count - 1;
 
             /* Custom field for the Name field */
-            MapListLabel nameLbl = new MapListLabel(list, obj, rowCount) { Text = (obj as Zone).Name };
+            MapListLabel nameLbl = new MapListLabel(list, obj) { Text = (obj as Zone).Name };
             nameLbl.Click += MapListLabel.nameLbl_Click;
-            list.AddEmbeddedControl(nameLbl, 0, rowCount);
+            list.AddEmbeddedControl(nameLbl, ListViewEx.nameIndex, rowCount);
 
-            /* Custom field at index 1 contains the edit button */
-            MapListButton editBtn = new MapListButton(list, obj, rowCount) { Text = "Edit" };
+            /* Custom field at index 1 for the Type of input */
+            MapListLabel typeLbl = new MapListLabel(list, obj) { Text = "Zone" };
+            typeLbl.Click += MapListLabel.nameLbl_Click;
+            list.AddEmbeddedControl(typeLbl, ListViewEx.typeIndex, rowCount);
+
+            /* Custom field at index 2 contains the edit button */
+            MapListButton editBtn = new MapListButton(list, obj) { Text = "Edit" };
             editBtn.Click += MapListButton.editBtn_Click;
-            list.AddEmbeddedControl(editBtn, 1, rowCount);
+            list.AddEmbeddedControl(editBtn, ListViewEx.editIndex, rowCount);
 
-            /* Custom field at index 2 contains the color picker button */
-            MapListButton colorBtn = new MapListButton(list, obj, rowCount) { BackColor = ((obj as Zone).Brush as SolidBrush).Color };
+            /* Custom field at index 3 contains the color picker button */
+            MapListButton colorBtn = new MapListButton(list, obj) { BackColor = ((obj as Zone).Brush as SolidBrush).Color };
             colorBtn.Click += MapListButton.colorBtn_Click;
-            list.AddEmbeddedControl(colorBtn, 2, rowCount);
+            list.AddEmbeddedControl(colorBtn, ListViewEx.colorIndex, rowCount);
+
+            /* Custom field at index 4 for the Checkbox (for selection) */
+            MapListButton selectedBtn = new MapListButton(list, obj) { Image = Properties.Resources.checkboxBtnImage };
+            selectedBtn.Click += MapListButton.selectedBtn_Click;
+            list.AddEmbeddedControl(selectedBtn, ListViewEx.showIndex, rowCount);
+
+            /* Custom field at index 4 for the Checkbox (for selection) */
+            MapListButton binBtn = new MapListButton(list, obj) { Image = Properties.Resources.binBtnImage };
+            binBtn.Click += MapListButton.binBtn_Click;
+            list.AddEmbeddedControl(binBtn, ListViewEx.removeIndex, rowCount);
 
             return listItem;
         }
