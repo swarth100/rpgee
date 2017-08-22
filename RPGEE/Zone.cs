@@ -14,6 +14,7 @@ namespace RPGEE
         public Image Image { get; }
         public Brush Brush { get; }
         public String Name { get; set; }
+        public bool Visible { get; set; } = true;
         private int ID { get; }
 
         private readonly List<Zone> zones;
@@ -72,16 +73,36 @@ namespace RPGEE
          * It turns the background behind the Label blue (when selected) */
         public void selectBackground()
         {
-            Label name = (Label) RpgEE.sideNavListView.GetEmbeddedControl(0, this.getListIndex());
-            name.BackColor = Color.CornflowerBlue;
+            selectorHelper(Color.CornflowerBlue);
         }
 
         /** Public method to de-select a given Zone
          * It turns the background behind the Label back to white */
         public void unselectBackground()
         {
-            Label name = (Label)RpgEE.sideNavListView.GetEmbeddedControl(0, this.getListIndex());
-            name.BackColor = Color.Transparent;
+            selectorHelper(Color.Transparent);
+        }
+
+        public void remove ()
+        {
+            int baseIndex = this.getListIndex();
+
+            RpgEE.map.resetSelectedZone(baseIndex);
+
+            RpgEE.sideNavListView.Items[baseIndex].Remove();
+
+            for (int i = baseIndex; i <= RpgEE.sideNavListView.Items.Count; i ++)
+            {
+                for (int j = 0; j < 6; j ++)
+                {
+                    Control embeddedControl = RpgEE.sideNavListView.GetEmbeddedControl(j, i);
+                    RpgEE.sideNavListView.RemoveEmbeddedControl(embeddedControl);
+                    if (i != baseIndex)
+                        RpgEE.sideNavListView.AddEmbeddedControl(embeddedControl, j, i - 1);
+                }
+            }
+
+            zones.RemoveAt(baseIndex);
         }
 
         /** Public method to change the Zone's Brush's color
@@ -95,7 +116,7 @@ namespace RPGEE
             (Brush as SolidBrush).Color = transparentColor;
 
             /* Determine the Zone's corresponding color Button and change the background */
-            Button colorBtn = (Button)RpgEE.sideNavListView.GetEmbeddedControl(2, this.getListIndex());
+            Button colorBtn = (Button)RpgEE.sideNavListView.GetEmbeddedControl(ListViewEx.colorIndex, this.getListIndex());
             colorBtn.BackColor = transparentColor;
         }
 
@@ -103,6 +124,16 @@ namespace RPGEE
         private void setDataHelper (Point pt, int x)
         {
             Data[pt.X / Map.blockSize, pt.Y / Map.blockSize] = x;
+        }
+
+        private void selectorHelper (Color newColor)
+        {
+            RpgEE.sideNavListView.GetEmbeddedControl(ListViewEx.nameIndex, this.getListIndex()).BackColor = newColor;
+            RpgEE.sideNavListView.GetEmbeddedControl(ListViewEx.typeIndex, this.getListIndex()).BackColor = newColor;
+
+            RpgEE.sideNavListView.Items[this.getListIndex()].BackColor = newColor;
+
+            RpgEE.sideNavListView.Update();
         }
 
         /** Private helper method to sort out Zones by ID */
