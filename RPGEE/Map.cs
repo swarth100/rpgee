@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -379,6 +380,7 @@ namespace RPGEE
         /** Public function invoked by clicking on a Zone's Name Label */
         public void changeSelectedZone(int newZone)
         {
+            Console.WriteLine(selectedZone);
             Zones[selectedZone].unselectBackground();
 
             selectedZone = newZone;
@@ -434,7 +436,15 @@ namespace RPGEE
 
         /** Private helper function to re-render the whole map onto the screen.
          * Handles async refresh event of the PictureBox in the form */
-        private void renderMap()
+        public void renderMap()
+        {
+            lock (BackgroundThread._activityLock)
+            {
+                BackgroundThread.activityQueue.Enqueue(new BackgroundThread.ActionEvent(BackgroundThread.Actions.RenderMap, null));
+            }
+        }
+
+        public void renderMapBackground()
         {
             using (var screen = Graphics.FromImage(mapScreen))
             {
@@ -443,10 +453,18 @@ namespace RPGEE
 
                 /* Render every zone's entire overlay */
                 foreach (Zone zone in Zones)
-                    renderMapHelper(screen, zone.Image);
+                    if (zone.Visible)
+                        renderMapHelper(screen, zone.Image);
             }
+            Console.WriteLine("Background Done!");
 
             RpgEE.refreshMap();
+        }
+
+        public void resetSelectedZone(int x)
+        {
+            if (selectedZone == x || selectedZone == RpgEE.sideNavListView.Items.Count - 1)
+                changeSelectedZone(0);
         }
 
         private void renderMapHelper(Graphics screen, Image img)
