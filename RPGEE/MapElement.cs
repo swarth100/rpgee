@@ -8,38 +8,30 @@ using System.Windows.Forms;
 
 namespace RPGEE
 {
-    public class Zone
+    /** Public MapElement class is a parent for Map Zones and Map Locations
+     * MapElements have Images and Brushes associated to them.
+     * They have a name and a Type
+     * They are collected into a list from which they can be ordered and/or removed */
+    public class MapElement
     {
-        /* Private fields */
-        public Image Image { get; }
-        public Brush Brush { get; }
+        public Image Image { get; set; }
+        public Brush Brush { get; set; }
         public String Name { get; set; }
-        public bool Visible { get; set; } = true;
-        private int ID { get; }
+        public String Type { get; set; }
+        public bool Visible { get; set; }
 
-        private readonly List<Zone> zones;
+        /* Private fields */
+        protected int ID { get; }
 
-        private int[,] Data;
+        private readonly List<MapElement> ElementList;
 
-        /* Default fields */
-        private int opacity = 150;
-
-        public Zone(Image map, List<Zone> list)
+        public MapElement(Image map, List<MapElement> list)
         {
-            this.Image = new Bitmap(map.Width, map.Height);
-            this.Brush = new SolidBrush(getRandomColor());
             this.ID = RpgEE.ZoneID++;
+            this.Visible = true;
 
-            this.Name = "Zone" + this.ID;
-
-            /* Store a reference to the Zone's list */
-            this.zones = list;
-
-            /* Create the 2D array to store the data held by the overlay Zone */
-            this.Data = new int[map.Width/Map.blockSize + 1, map.Height/Map.blockSize + 1];
-
-            /* */
-            Generator<Form>.addMapListItem(RpgEE.sideNavListView, this);
+            /* Store a reference to the Object's reference list */
+            this.ElementList = list;
 
             /* Append the new element to the list of zones */
             list.Add(this);
@@ -48,7 +40,67 @@ namespace RPGEE
         /** Public function to return a given Zone's list index based upon it's ID */
         public int getListIndex()
         {
-            return zones.FindIndex(FindByID(this.ID));
+            return ElementList.FindIndex(FindByID(this.ID));
+        }
+
+        /** Public function to remove the current Map Element from the list of available elements */
+        public void removeListElement()
+        {
+            int baseIndex = this.getListIndex();
+            this.Visible = false;
+
+            RpgEE.map.resetSelectedZone(baseIndex);
+
+            RpgEE.sideNavListView.Items[baseIndex].Remove();
+
+            /* Iterates through the whole list of elements in the Extended ListView
+             * Every element AFTER the removed one must have its contents shifted down by a row,
+             * or otherwise they can no longer be accessed via index [col, row] */
+            for (int i = baseIndex; i <= RpgEE.sideNavListView.Items.Count; i++)
+            {
+                for (int j = 0; j < RpgEE.sideNavListView.Columns.Count; j++)
+                {
+                    Control embeddedControl = RpgEE.sideNavListView.GetEmbeddedControl(j, i);
+                    RpgEE.sideNavListView.RemoveEmbeddedControl(embeddedControl);
+                    if (i != baseIndex)
+                        RpgEE.sideNavListView.AddEmbeddedControl(embeddedControl, j, i - 1);
+                }
+            }
+
+            ElementList.RemoveAt(baseIndex);
+
+            RpgEE.map.renderMap();
+        }
+
+        /** Private helper method to sort out Zones by ID */
+        private static Predicate<MapElement> FindByID(int ID)
+        {
+            return delegate (MapElement element)
+            {
+                return element.ID == ID;
+            };
+        }
+    }
+    public class MapZone : MapElement
+    {
+        private int[,] Data;
+
+        /* Default fields */
+        private int opacity = 150;
+
+        public MapZone(Image map, List<MapElement> list) : base(map, list)
+        {
+            this.Image = new Bitmap(map.Width, map.Height);
+            this.Brush = new SolidBrush(getRandomColor());
+
+            this.Type = "Zone";
+            this.Name = this.Type + this.ID;
+
+            /* Create the 2D array to store the data held by the overlay Zone */
+            this.Data = new int[map.Width/Map.blockSize + 1, map.Height/Map.blockSize + 1];
+
+            /* */
+            Generator<Form>.addMapListItem(RpgEE.sideNavListView, this);
         }
 
         /** Public method to set a specific Point's Zone data to true */
@@ -83,28 +135,6 @@ namespace RPGEE
             selectorHelper(Color.Transparent);
         }
 
-        public void remove ()
-        {
-            int baseIndex = this.getListIndex();
-
-            RpgEE.map.resetSelectedZone(baseIndex);
-
-            RpgEE.sideNavListView.Items[baseIndex].Remove();
-
-            for (int i = baseIndex; i <= RpgEE.sideNavListView.Items.Count; i ++)
-            {
-                for (int j = 0; j < 6; j ++)
-                {
-                    Control embeddedControl = RpgEE.sideNavListView.GetEmbeddedControl(j, i);
-                    RpgEE.sideNavListView.RemoveEmbeddedControl(embeddedControl);
-                    if (i != baseIndex)
-                        RpgEE.sideNavListView.AddEmbeddedControl(embeddedControl, j, i - 1);
-                }
-            }
-
-            zones.RemoveAt(baseIndex);
-        }
-
         /** Public method to change the Zone's Brush's color
          * It updates also the BackColor of the Zone's color selector button */
         public void changeColor(Color newColor)
@@ -126,6 +156,8 @@ namespace RPGEE
             Data[pt.X / Map.blockSize, pt.Y / Map.blockSize] = x;
         }
 
+        /** Private helper method to toggle Background colors of selectors
+         * Handles also view updates to finalise them */
         private void selectorHelper (Color newColor)
         {
             RpgEE.sideNavListView.GetEmbeddedControl(ListViewEx.nameIndex, this.getListIndex()).BackColor = newColor;
@@ -134,15 +166,6 @@ namespace RPGEE
             RpgEE.sideNavListView.Items[this.getListIndex()].BackColor = newColor;
 
             RpgEE.sideNavListView.Update();
-        }
-
-        /** Private helper method to sort out Zones by ID */
-        private static Predicate<Zone> FindByID (int ID)
-        {
-            return delegate (Zone zone)
-            {
-                return zone.ID == ID;
-            };
         }
 
         /** Private color helper randomiser */
