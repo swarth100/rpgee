@@ -173,14 +173,7 @@ namespace RPGEE
             sideNavTable = Generator<TableLayoutPanel>.generateSideTable(3, 1);
             Generator<TableLayoutPanel>.addObject(sideNavTable, mapTable, 0, 1);
 
-            // Temporary
-            // sideBtn = Generator<Button>.addObject(new Button() { Text = "SideNav" }, sideNavTable, 0, 0);
-
             sideNavListView = Generator<ListViewEx>.addObject(new ListViewEx(new[] { "Name", "Type", "Edit", "Color", "Show", "Remove" }), sideNavTable, 0, 0);
-
-            // sideView.Items.Add(new ListViewItem(new[] { "id123", "Tom", "24", "lel" }));
-            // sideView.Items.Add(new ListViewItem(new[] { "id123", "Tom", "24", "lel" }));
-            // sideView.AddEmbeddedControl(new Button() { Text = "Btn" }, 1, 1);
 
             /* Initialise mapButtons */
             mapBtnTable1 = Generator<TableLayoutPanel>.generateButtonTable(1, 5);
@@ -189,29 +182,29 @@ namespace RPGEE
             mapBtnTable2 = Generator<TableLayoutPanel>.generateButtonTable(1, 5);
             Generator<TableLayoutPanel>.addObject(mapBtnTable2, sideNavTable, 2, 0);
 
-            moveMapBtn = Generator<Button>.addObject(new Button(), mapBtnTable1, 0, 0);
-            moveMapBtn.Image = Properties.Resources.moveBtnImage;
+            moveMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.moveBtnImage },
+                mapBtnTable1, 0, 0);
             moveMapBtn.Click += this.moveMapBtn_Click;
 
-            drawMapBtn = Generator<Button>.addObject(new Button(), mapBtnTable1, 1, 0);
-            drawMapBtn.Image = Properties.Resources.drawBtnImage;
+            drawMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.drawBtnImage },
+                mapBtnTable1, 1, 0);
             drawMapBtn.Click += this.drawMapBtn_Click;
 
-            inspectMapBtn = Generator<Button>.addObject(new Button(), mapBtnTable1, 2, 0);
-            inspectMapBtn.Image = Properties.Resources.inspectBtnImage;
+            inspectMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.inspectBtnImage },
+                mapBtnTable1, 2, 0);
             inspectMapBtn.Click += this.inspectMapBtn_Click;
 
-            deleteMapBtn = Generator<Button>.addObject(new Button(), mapBtnTable1, 3, 0);
-            deleteMapBtn.Image = Properties.Resources.eraseBtnImage;
+            deleteMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.eraseBtnImage },
+                mapBtnTable1, 3, 0);
             deleteMapBtn.Click += this.deleteMapBtn_Click;
 
             /* Initialise second level of buttons */
-            newPinMapBtn = Generator<Button>.addObject(new Button(), mapBtnTable2, 0, 0);
-            newPinMapBtn.Image = Properties.Resources.addBtnImage;
+            newPinMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.addBtnImage },
+                mapBtnTable2, 0, 0);
             // newMapBtn.Click += this.newMapBtn_Click;
 
-            newMapBtn = Generator<Button>.addObject(new Button(), mapBtnTable2, 1, 0);
-            newMapBtn.Image = Properties.Resources.newBtnImage;
+            newMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.newBtnImage },
+                mapBtnTable2, 1, 0);
             newMapBtn.Click += this.newMapBtn_Click;
 
             /* Temporary button placeholders */
