@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,14 +15,12 @@ namespace RPGEE
         public Object ListParent { get; }
 
         /* Private fields */
-        private int RowIndex { get; }
         private ListViewEx List { get; }
 
         /* Constructor */
-        public MapListLabel(ListViewEx list, Object parent, int index) : base()
+        public MapListLabel(ListViewEx list, Object parent) : base()
         {
             ListParent = parent;
-            RowIndex = index;
             List = list;
 
             TextAlign = ContentAlignment.MiddleCenter;
@@ -50,14 +49,12 @@ namespace RPGEE
         public Object ListParent { get; }
 
         /* Private fields */
-        private int RowIndex { get; }
         private ListViewEx List { get; }
 
         /* Constructor */
-        public MapListButton(ListViewEx list, Object parent, int index) : base()
+        public MapListButton(ListViewEx list, Object parent) : base()
         {
             ListParent = parent;
-            RowIndex = index;
             List = list;
         }
 
@@ -81,7 +78,8 @@ namespace RPGEE
          * Finalises the contents of the TextBox before removing it */
         private void replaceTextBox()
         {
-            (ListParent as Zone).Name = List.GetEmbeddedControl(0, RowIndex).Text;
+            Zone zone = (ListParent as Zone);
+            zone.Name = List.GetEmbeddedControl(0, zone.getListIndex()).Text;
             Label nameLbl = new Label() { Text = (ListParent as Zone).Name, TextAlign = ContentAlignment.MiddleCenter };
 
             replaceHelper(nameLbl);
@@ -91,10 +89,10 @@ namespace RPGEE
         private void replaceHelper(Control newCtrl)
         {
             /* Remove the component present in the first cell */
-            List.RemoveEmbeddedControl(List.GetEmbeddedControl(0, RowIndex));
+            List.RemoveEmbeddedControl(List.GetEmbeddedControl(ListViewEx.nameIndex, (ListParent as Zone).getListIndex()));
 
             /* Add the newly generated component */
-            List.AddEmbeddedControl(newCtrl, 0, RowIndex);
+            List.AddEmbeddedControl(newCtrl, ListViewEx.nameIndex, (ListParent as Zone).getListIndex());
         }
 
         /** Helper method to spawn a new ColorDialog */
@@ -111,6 +109,26 @@ namespace RPGEE
             /* Update the text box color if the user clicks OK */
             if (MyDialog.ShowDialog() == DialogResult.OK)
                 (ListParent as Zone).changeColor(MyDialog.Color);
+        }
+
+        private void toggleSelected()
+        {
+            Zone parentZone = (ListParent as Zone);
+            parentZone.Visible = !parentZone.Visible;
+
+            Button refBtn = (List.GetEmbeddedControl(ListViewEx.showIndex, (ListParent as Zone).getListIndex()) as Button);
+
+            if (parentZone.Visible)
+                refBtn.Image = Properties.Resources.checkboxBtnImage;
+            else
+                refBtn.Image = null;
+            
+            RpgEE.map.renderMap();
+        }
+
+        private void removeItem()
+        {
+            (ListParent as Zone).remove();
         }
 
         /* Handles a lose focus event for the ListItem's name editBox */
@@ -135,6 +153,20 @@ namespace RPGEE
             MapListButton button = sender as MapListButton;
 
             button.spawnColorDialog();
+        }
+
+        public static void selectedBtn_Click(object sender, System.EventArgs e)
+        {
+            MapListButton button = sender as MapListButton;
+
+            button.toggleSelected();
+        }
+
+        public static void binBtn_Click(object sender, System.EventArgs e)
+        {
+            MapListButton button = sender as MapListButton;
+
+            button.removeItem();
         }
 
         #endregion
