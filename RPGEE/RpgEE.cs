@@ -61,11 +61,13 @@ namespace RPGEE
         public static ListViewEx sideNavListView;
         public static Map map;
         private static Label loadLbl;
-        private readonly TableLayoutPanel mapBtnTable;
+        private readonly TableLayoutPanel mapBtnTable1;
+        private readonly TableLayoutPanel mapBtnTable2;
         private readonly Button moveMapBtn;
         private readonly Button drawMapBtn;
         private readonly Button inspectMapBtn;
         private readonly Button newMapBtn;
+        private readonly Button newPinMapBtn;
         private readonly Button deleteMapBtn;
         private readonly Button backBtn;
         private readonly Button topBtn;
@@ -79,7 +81,7 @@ namespace RPGEE
         public RpgEE()
         {
             this.Text = "RpgEE";
-            this.Size = new Size(650, 400);
+            this.Size = new Size(650, 450);
             RpgEEForm = this;
 
             #region loginLayout
@@ -168,35 +170,48 @@ namespace RPGEE
             loadLbl = Generator<Label>.addObject(new Label() { Text = "Loading ...", TextAlign = ContentAlignment.MiddleCenter }, mapTable, 1, 1);
 
             /* Initialise sideNav Components */
-            sideNavTable = Generator<TableLayoutPanel>.generateSideTable(2, 1);
+            sideNavTable = Generator<TableLayoutPanel>.generateSideTable(3, 1);
             Generator<TableLayoutPanel>.addObject(sideNavTable, mapTable, 0, 1);
 
             // Temporary
             // sideBtn = Generator<Button>.addObject(new Button() { Text = "SideNav" }, sideNavTable, 0, 0);
 
-            sideNavListView = Generator<ListViewEx>.addObject(new ListViewEx(new[] { "Zone", "Edit", "Color", "Remove" }), sideNavTable, 0, 0);
+            sideNavListView = Generator<ListViewEx>.addObject(new ListViewEx(new[] { "Name", "Type", "Edit", "Color", "Show", "Remove" }), sideNavTable, 0, 0);
 
             // sideView.Items.Add(new ListViewItem(new[] { "id123", "Tom", "24", "lel" }));
             // sideView.Items.Add(new ListViewItem(new[] { "id123", "Tom", "24", "lel" }));
             // sideView.AddEmbeddedControl(new Button() { Text = "Btn" }, 1, 1);
 
             /* Initialise mapButtons */
-            mapBtnTable = Generator<TableLayoutPanel>.generateButtonTable(1, 5);
-            Generator<TableLayoutPanel>.addObject(mapBtnTable, sideNavTable, 1, 0);
+            mapBtnTable1 = Generator<TableLayoutPanel>.generateButtonTable(1, 5);
+            Generator<TableLayoutPanel>.addObject(mapBtnTable1, sideNavTable, 1, 0);
 
-            moveMapBtn = Generator<Button>.addObject(new Button() { Text = "M" }, mapBtnTable, 0, 0);
+            mapBtnTable2 = Generator<TableLayoutPanel>.generateButtonTable(1, 5);
+            Generator<TableLayoutPanel>.addObject(mapBtnTable2, sideNavTable, 2, 0);
+
+            moveMapBtn = Generator<Button>.addObject(new Button(), mapBtnTable1, 0, 0);
+            moveMapBtn.Image = Properties.Resources.moveBtnImage;
             moveMapBtn.Click += this.moveMapBtn_Click;
 
-            drawMapBtn = Generator<Button>.addObject(new Button() { Text = "D" }, mapBtnTable, 1, 0);
+            drawMapBtn = Generator<Button>.addObject(new Button(), mapBtnTable1, 1, 0);
+            drawMapBtn.Image = Properties.Resources.drawBtnImage;
             drawMapBtn.Click += this.drawMapBtn_Click;
 
-            inspectMapBtn = Generator<Button>.addObject(new Button() { Text = "I" }, mapBtnTable, 2, 0);
+            inspectMapBtn = Generator<Button>.addObject(new Button(), mapBtnTable1, 2, 0);
+            inspectMapBtn.Image = Properties.Resources.inspectBtnImage;
             inspectMapBtn.Click += this.inspectMapBtn_Click;
 
-            deleteMapBtn = Generator<Button>.addObject(new Button() { Text = "E" }, mapBtnTable, 3, 0);
+            deleteMapBtn = Generator<Button>.addObject(new Button(), mapBtnTable1, 3, 0);
+            deleteMapBtn.Image = Properties.Resources.eraseBtnImage;
             deleteMapBtn.Click += this.deleteMapBtn_Click;
 
-            newMapBtn = Generator<Button>.addObject(new Button() { Text = "N" }, mapBtnTable, 4, 0);
+            /* Initialise second level of buttons */
+            newPinMapBtn = Generator<Button>.addObject(new Button(), mapBtnTable2, 0, 0);
+            newPinMapBtn.Image = Properties.Resources.addBtnImage;
+            // newMapBtn.Click += this.newMapBtn_Click;
+
+            newMapBtn = Generator<Button>.addObject(new Button(), mapBtnTable2, 1, 0);
+            newMapBtn.Image = Properties.Resources.newBtnImage;
             newMapBtn.Click += this.newMapBtn_Click;
 
             /* Temporary button placeholders */
@@ -343,16 +358,16 @@ namespace RPGEE
             RpgEE.SpawnMap(RpgEEForm, mapTable);
         }
 
-        delegate void RefreshMapCallback(Form form);
+        delegate void RefreshMapCallback(Form form, DraggablePictureBox img);
 
-        private static void RefreshMap(Form form, PictureBox img)
+        private static void RefreshMap(Form form, DraggablePictureBox img)
         {
             /** InvokeRequired required compares the thread ID of the 
              * calling thread to the thread ID of the creating thread. 
              * If these threads are different, it returns true. */
             if (img.InvokeRequired)
             {
-                SpawnMapCallback cb = new SpawnMapCallback(SpawnMap);
+                RefreshMapCallback cb = new RefreshMapCallback(RefreshMap);
                 form.Invoke(cb, new object[] { form, img });
             }
             else
