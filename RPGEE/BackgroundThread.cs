@@ -110,7 +110,7 @@ namespace RPGEE
                             }
 
                             /* Force initial map async rendering */
-                            RpgEE.map.loadMap(RpgEE.mapPct);
+                            RpgEE.map.loadMap();
 
                             break;
                     }
