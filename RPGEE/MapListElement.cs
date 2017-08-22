@@ -34,7 +34,7 @@ namespace RPGEE
         {
             MapListLabel label = sender as MapListLabel;
 
-            RpgEE.map.changeSelectedZone((label.ListParent as Zone).getListIndex());
+            RpgEE.map.changeSelectedZone((label.ListParent as MapZone).getListIndex());
         }
 
         #endregion
@@ -46,13 +46,13 @@ namespace RPGEE
     public class MapListButton : Button
     {
         /* Public fields */
-        public Object ListParent { get; }
+        public MapElement ListParent { get; }
 
         /* Private fields */
         private ListViewEx List { get; }
 
         /* Constructor */
-        public MapListButton(ListViewEx list, Object parent) : base()
+        public MapListButton(ListViewEx list, MapElement parent) : base()
         {
             ListParent = parent;
             List = list;
@@ -63,7 +63,7 @@ namespace RPGEE
          * Losing Focus of the TextBox will finalise the option written inside */
         public void replaceLabel()
         {
-            TextBox editBox = new TextBox() { Text = (ListParent as Zone).Name };
+            TextBox editBox = new TextBox() { Text = ListParent.Name };
 
             /* Add focus event handlers */
             editBox.LostFocus += editBox_LostFocus;
@@ -78,9 +78,8 @@ namespace RPGEE
          * Finalises the contents of the TextBox before removing it */
         private void replaceTextBox()
         {
-            Zone zone = (ListParent as Zone);
-            zone.Name = List.GetEmbeddedControl(0, zone.getListIndex()).Text;
-            Label nameLbl = new Label() { Text = (ListParent as Zone).Name, TextAlign = ContentAlignment.MiddleCenter };
+            ListParent.Name = List.GetEmbeddedControl(0, ListParent.getListIndex()).Text;
+            Label nameLbl = new Label() { Text = ListParent.Name, TextAlign = ContentAlignment.MiddleCenter };
 
             replaceHelper(nameLbl);
         }
@@ -89,10 +88,10 @@ namespace RPGEE
         private void replaceHelper(Control newCtrl)
         {
             /* Remove the component present in the first cell */
-            List.RemoveEmbeddedControl(List.GetEmbeddedControl(ListViewEx.nameIndex, (ListParent as Zone).getListIndex()));
+            List.RemoveEmbeddedControl(List.GetEmbeddedControl(ListViewEx.nameIndex, ListParent.getListIndex()));
 
             /* Add the newly generated component */
-            List.AddEmbeddedControl(newCtrl, ListViewEx.nameIndex, (ListParent as Zone).getListIndex());
+            List.AddEmbeddedControl(newCtrl, ListViewEx.nameIndex, ListParent.getListIndex());
         }
 
         /** Helper method to spawn a new ColorDialog */
@@ -108,27 +107,31 @@ namespace RPGEE
 
             /* Update the text box color if the user clicks OK */
             if (MyDialog.ShowDialog() == DialogResult.OK)
-                (ListParent as Zone).changeColor(MyDialog.Color);
+                (ListParent as MapZone).changeColor(MyDialog.Color);
         }
 
+        /** Private method to toggle a given MapElement's visibility
+         * Rerenders the mapp (async) to finalize the changes */
         private void toggleSelected()
         {
-            Zone parentZone = (ListParent as Zone);
-            parentZone.Visible = !parentZone.Visible;
+            ListParent.Visible = !ListParent.Visible;
 
-            Button refBtn = (List.GetEmbeddedControl(ListViewEx.showIndex, (ListParent as Zone).getListIndex()) as Button);
+            Button refBtn = (List.GetEmbeddedControl(ListViewEx.showIndex, ListParent.getListIndex()) as Button);
 
-            if (parentZone.Visible)
+            /* Update the Image in the MapElement's checkbox */
+            if (ListParent.Visible)
                 refBtn.Image = Properties.Resources.checkboxBtnImage;
             else
                 refBtn.Image = null;
             
+            /* Re-draw all the visible layers onto the actual map */
             RpgEE.map.renderMap();
         }
 
+        /** Private method to remove a given MapElement from the containing list */
         private void removeItem()
         {
-            (ListParent as Zone).remove();
+            ListParent.removeListElement();
         }
 
         /* Handles a lose focus event for the ListItem's name editBox */
