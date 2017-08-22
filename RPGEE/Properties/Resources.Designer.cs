@@ -63,6 +63,26 @@ namespace RPGEE.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap addBtnImage {
+            get {
+                object obj = ResourceManager.GetObject("addBtnImage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap binBtnImage {
+            get {
+                object obj = ResourceManager.GetObject("binBtnImage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap BLOCKS_back {
             get {
                 object obj = ResourceManager.GetObject("BLOCKS_back", resourceCulture);
@@ -96,6 +116,66 @@ namespace RPGEE.Properties {
         internal static System.Drawing.Bitmap BLOCKS_misc {
             get {
                 object obj = ResourceManager.GetObject("BLOCKS_misc", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap checkboxBtnImage {
+            get {
+                object obj = ResourceManager.GetObject("checkboxBtnImage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap drawBtnImage {
+            get {
+                object obj = ResourceManager.GetObject("drawBtnImage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap eraseBtnImage {
+            get {
+                object obj = ResourceManager.GetObject("eraseBtnImage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap inspectBtnImage {
+            get {
+                object obj = ResourceManager.GetObject("inspectBtnImage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap moveBtnImage {
+            get {
+                object obj = ResourceManager.GetObject("moveBtnImage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap newBtnImage {
+            get {
+                object obj = ResourceManager.GetObject("newBtnImage", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
