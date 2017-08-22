@@ -58,14 +58,13 @@ namespace RPGEE
          */
         private static TableLayoutPanel mapTable;
         private readonly TableLayoutPanel sideNavTable;
-        public static PictureBox mapPct;
         public static ListViewEx sideNavListView;
         public static Map map;
         private static Label loadLbl;
         private readonly TableLayoutPanel mapBtnTable;
         private readonly Button moveMapBtn;
         private readonly Button drawMapBtn;
-        private readonly Button fillMapBtn;
+        private readonly Button inspectMapBtn;
         private readonly Button newMapBtn;
         private readonly Button deleteMapBtn;
         private readonly Button backBtn;
@@ -163,9 +162,9 @@ namespace RPGEE
 
             /* Initialise the MAP */
             map = new Map();
+            map.setPictureBox(new DraggablePictureBox(map));
 
             /* Initialise the map's draggable image and placeholder */
-            mapPct = new DraggablePictureBox(map);
             loadLbl = Generator<Label>.addObject(new Label() { Text = "Loading ...", TextAlign = ContentAlignment.MiddleCenter }, mapTable, 1, 1);
 
             /* Initialise sideNav Components */
@@ -191,14 +190,14 @@ namespace RPGEE
             drawMapBtn = Generator<Button>.addObject(new Button() { Text = "D" }, mapBtnTable, 1, 0);
             drawMapBtn.Click += this.drawMapBtn_Click;
 
-            fillMapBtn = Generator<Button>.addObject(new Button() { Text = "F" }, mapBtnTable, 2, 0);
-            fillMapBtn.Click += this.fillMapBtn_Click;
+            inspectMapBtn = Generator<Button>.addObject(new Button() { Text = "I" }, mapBtnTable, 2, 0);
+            inspectMapBtn.Click += this.inspectMapBtn_Click;
 
-            newMapBtn = Generator<Button>.addObject(new Button() { Text = "N" }, mapBtnTable, 3, 0);
-            newMapBtn.Click += this.newMapBtn_Click;
-
-            deleteMapBtn = Generator<Button>.addObject(new Button() { Text = "R" }, mapBtnTable, 4, 0);
+            deleteMapBtn = Generator<Button>.addObject(new Button() { Text = "E" }, mapBtnTable, 3, 0);
             deleteMapBtn.Click += this.deleteMapBtn_Click;
+
+            newMapBtn = Generator<Button>.addObject(new Button() { Text = "N" }, mapBtnTable, 4, 0);
+            newMapBtn.Click += this.newMapBtn_Click;
 
             /* Temporary button placeholders */
             backBtn = Generator<Button>.addObject(new Button() { Text = "Back" }, mapTable, 0, 0);
@@ -243,17 +242,17 @@ namespace RPGEE
 
         void moveMapBtn_Click(object sender, EventArgs e)
         {
-            map.status = Map.Status.Move;
+            changeMapStatus(Map.Status.Move);
         }
 
         void drawMapBtn_Click(object sender, EventArgs e)
         {
-            map.status = Map.Status.Draw;
+            changeMapStatus(Map.Status.Draw);
         }
 
-        void fillMapBtn_Click(object sender, EventArgs e)
+        void inspectMapBtn_Click(object sender, EventArgs e)
         {
-            map.status = Map.Status.Fill;
+            changeMapStatus(Map.Status.Inspect);
         }
 
         void newMapBtn_Click(object sender, EventArgs e)
@@ -263,7 +262,7 @@ namespace RPGEE
 
         void deleteMapBtn_Click(object sender, EventArgs e)
         {
-            map.status = Map.Status.Delete;
+            changeMapStatus(Map.Status.Delete);
         }
 
         #endregion
@@ -335,7 +334,7 @@ namespace RPGEE
             {
                 /* Substitute the load placeholder label with the new image */
                 panel.Controls.Remove(loadLbl);
-                Generator<PictureBox>.addDraggablePictureBox((DraggablePictureBox)mapPct, panel, 1, 1);
+                Generator<PictureBox>.addDraggablePictureBox((DraggablePictureBox)map.PictureBox, panel, 1, 1);
             }
         }
 
@@ -365,7 +364,7 @@ namespace RPGEE
 
         public static void refreshMap()
         {
-            RpgEE.RefreshMap(RpgEEForm, mapPct);
+            RpgEE.RefreshMap(RpgEEForm, map.PictureBox);
         }
 
         #endregion
@@ -378,6 +377,19 @@ namespace RPGEE
         public static int getMapWidth()
         {
             return mapTable.GetControlFromPosition(1, 1).Right - mapTable.GetControlFromPosition(1, 1).Left;
+        }
+
+        private void changeMapStatus(Map.Status newStatus)
+        {
+            map.PictureBox.Inspecting = false;
+            map.status = newStatus;
+
+            switch (newStatus)
+            {
+                case Map.Status.Inspect:
+                    map.PictureBox.Inspecting = true;
+                    break;
+            }
         }
     }
 }
