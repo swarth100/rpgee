@@ -179,7 +179,7 @@ namespace RPGEE
         private static Image map;
 
         /* Zones */
-        private List<Zone> Zones = new List<Zone>();
+        private List<MapElement> MapElements = new List<MapElement>();
         private int selectedZone;
 
         /** Initialise a new map instance */
@@ -248,7 +248,7 @@ namespace RPGEE
             mapScreen = PictureBox.Image;
 
             /* Initialise zones */
-            Zone defaultZone = new Zone(PictureBox.Image, Zones);
+            MapZone defaultZone = new MapZone(PictureBox.Image, MapElements);
             changeSelectedZone(defaultZone.getListIndex());
 
             /* Clone the new image as the map */
@@ -322,6 +322,8 @@ namespace RPGEE
             }
         }
 
+        #region mapDrawing
+
         public void drawPoint(Point p)
         {
             drawPointHelper(p, true);
@@ -340,27 +342,24 @@ namespace RPGEE
             Point roundP = getRoundPoint(p);
 
             /* Determine which zone is currently selected for drawing */
-            Zone curZone = Zones[selectedZone];
+            MapZone curZone = (MapElements[selectedZone] as MapZone);
 
             bool drawnPoint = curZone.isPointSelected(roundP);
 
-            if ((!drawnPoint && draw) || (drawnPoint && !draw))
+            /* Check if the given MapZone has been set to visible and is drawable */
+            if (curZone.Visible && ((!drawnPoint && draw) || (drawnPoint && !draw)))
             {
-
                 /* Render the new point onto the current Zone's overlay */
                 using (var overlayGraphics = Graphics.FromImage(curZone.Image))
                 {
-                    /* Conditionally select the brush to use */
+                    /* Conditionally draw or erase to the Image */
                     if (draw)
                         overlayGraphics.FillRectangle(curZone.Brush, new Rectangle(roundP, new Size(blockSize, blockSize)));
                     else
                         removeBitmapRegion(roundP, curZone);
-
-                    // overlayGraphics.Re
-                    // overlayGraphics.FillRectangle(brush, new Rectangle(roundP, new Size(blockSize, blockSize)));
                 }
 
-                /* Conditionally draw or erase */
+                /* Conditionally draw or erase to the DataMap */
                 if (draw)
                     curZone.addPoint(roundP);
                 else
@@ -371,35 +370,40 @@ namespace RPGEE
             }
         }
 
+        /** Helper function to round a given to the nearest blockSize pixel */
+        private Point getRoundPoint(Point p)
+        {
+            return new Point(((int)p.X / blockSize) * blockSize, ((int)p.Y / blockSize) * blockSize);
+        }
+
+        /** Helper method to erase a region (the size of a square blockSize) from a given zone's image
+         * It iterates and removes every single pixel */
+        private void removeBitmapRegion(Point pt, MapZone curZone)
+        {
+            for (int i = 0; i < blockSize; i++)
+                for (int j = 0; j < blockSize; j++)
+                    (curZone.Image as Bitmap).SetPixel(pt.X + i, pt.Y + j, Color.Empty);
+        }
+
+        #endregion
+
         /** Public function invoked to spawn a new Zone to be drawn onto the map */
         public void addNewZone()
         {
-            changeSelectedZone(new Zone(map, Zones).getListIndex());
+            changeSelectedZone(new MapZone(map, MapElements).getListIndex());
         }
 
         /** Public function invoked by clicking on a Zone's Name Label */
         public void changeSelectedZone(int newZone)
         {
-            Console.WriteLine(selectedZone);
-            Zones[selectedZone].unselectBackground();
+            (MapElements[selectedZone] as MapZone).unselectBackground();
 
             selectedZone = newZone;
 
-            Zones[selectedZone].selectBackground();
+            (MapElements[selectedZone] as MapZone).selectBackground();
         }
 
-        private Point getRoundPoint (Point p)
-        {
-            return new Point(((int)p.X / blockSize) * blockSize, ((int)p.Y / blockSize) * blockSize);
-        }
-
-        private void removeBitmapRegion (Point pt, Zone curZone)
-        {
-            for (int i = 0; i < blockSize; i ++)
-                for (int j = 0; j < blockSize; j ++)
-                    (curZone.Image as Bitmap).SetPixel(pt.X + i, pt.Y + j, Color.Empty);
-        }
-
+        /** Helper method to show the tooltip overlay onto the map */
         public void showTooltip (Point pt)
         {
             Point roundPt = getRoundPoint(pt);
@@ -422,7 +426,7 @@ namespace RPGEE
                 renderPointHelper(screen, map, rect);
 
                 /* Render every zone with the given update area */
-                foreach (Zone zone in Zones)
+                foreach (MapZone zone in MapElements)
                     renderPointHelper(screen, zone.Image, rect);
             }
 
@@ -452,11 +456,10 @@ namespace RPGEE
                 renderMapHelper(screen, map);
 
                 /* Render every zone's entire overlay */
-                foreach (Zone zone in Zones)
+                foreach (MapZone zone in MapElements)
                     if (zone.Visible)
                         renderMapHelper(screen, zone.Image);
             }
-            Console.WriteLine("Background Done!");
 
             RpgEE.refreshMap();
         }
