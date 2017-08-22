@@ -138,6 +138,30 @@
   <ItemGroup>
     <None Include="Resources\BLOCKS_misc.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\eraseBtnImage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\moveBtnImage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\newBtnImage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\inspectBtnImage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\addBtnImage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\checkboxBtnImage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\drawBtnImage.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\binBtnImage.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
