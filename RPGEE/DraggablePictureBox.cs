@@ -70,8 +70,8 @@ namespace RPGEE
                     mousePos.updatePosition(e);
                     mouseDrag.updatePosition(e);
 
-                    maxBottomPos = RpgEE.getMapHeight();
-                    maxRightPos = RpgEE.getMapWidth();
+                    maxBottomPos = RpgEE.map.PictureBox.Parent.Height;
+                    maxRightPos = RpgEE.map.PictureBox.Parent.Width;
                 }
                 else if (map.status == Map.Status.Draw)
                 {
