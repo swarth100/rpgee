@@ -200,11 +200,11 @@ namespace RPGEE
 
             /* Initialise second level of buttons */
             newPinMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.addBtnImage },
-                mapBtnTable2, 0, 0);
-            // newMapBtn.Click += this.newMapBtn_Click;
+                mapBtnTable1, 4, 0);
+            newPinMapBtn.Click += this.newPinMapBtn_Click;
 
             newMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.newBtnImage },
-                mapBtnTable2, 1, 0);
+                mapBtnTable2, 0, 0);
             newMapBtn.Click += this.newMapBtn_Click;
 
             /* Temporary button placeholders */
@@ -250,17 +250,17 @@ namespace RPGEE
 
         void moveMapBtn_Click(object sender, EventArgs e)
         {
-            changeMapStatus(Map.Status.Move);
+            map.changeMapStatus(Map.Status.Move, sender as Control);
         }
 
         void drawMapBtn_Click(object sender, EventArgs e)
         {
-            changeMapStatus(Map.Status.Draw);
+            map.changeMapStatus(Map.Status.Draw, sender as Control);
         }
 
         void inspectMapBtn_Click(object sender, EventArgs e)
         {
-            changeMapStatus(Map.Status.Inspect);
+            map.changeMapStatus(Map.Status.Inspect, sender as Control);
         }
 
         void newMapBtn_Click(object sender, EventArgs e)
@@ -270,7 +270,12 @@ namespace RPGEE
 
         void deleteMapBtn_Click(object sender, EventArgs e)
         {
-            changeMapStatus(Map.Status.Delete);
+            map.changeMapStatus(Map.Status.Delete, sender as Control);
+        }
+
+        void newPinMapBtn_Click(object sender, EventArgs e)
+        {
+            map.changeMapStatus(Map.Status.Insert, sender as Control);
         }
 
         #endregion
@@ -326,78 +331,16 @@ namespace RPGEE
 
         #region mapUpdates
 
-        delegate void SpawnMapCallback(Form form, TableLayoutPanel panel);
-
-        private static void SpawnMap(Form form, TableLayoutPanel panel)
-        {
-            /** InvokeRequired required compares the thread ID of the 
-             * calling thread to the thread ID of the creating thread. 
-             * If these threads are different, it returns true. */
-            if (panel.InvokeRequired)
-            {
-                SpawnMapCallback cb = new SpawnMapCallback(SpawnMap);
-                form.Invoke(cb, new object[] { form, panel });
-            }
-            else
-            {
-                /* Substitute the load placeholder label with the new image */
-                panel.Controls.Remove(loadLbl);
-                Generator<PictureBox>.addDraggablePictureBox((DraggablePictureBox)map.PictureBox, panel, 1, 1);
-            }
-        }
-
         public static void spawnMap()
         {
-            RpgEE.SpawnMap(RpgEEForm, mapTable);
-        }
-
-        delegate void RefreshMapCallback(Form form, DraggablePictureBox img);
-
-        private static void RefreshMap(Form form, DraggablePictureBox img)
-        {
-            /** InvokeRequired required compares the thread ID of the 
-             * calling thread to the thread ID of the creating thread. 
-             * If these threads are different, it returns true. */
-            if (img.InvokeRequired)
-            {
-                RefreshMapCallback cb = new RefreshMapCallback(RefreshMap);
-                form.Invoke(cb, new object[] { form, img });
-            }
-            else
-            {
-                /* Refresh the image */
-                img.Refresh();
-            }
+            map.SpawnMap(RpgEEForm, mapTable, loadLbl);
         }
 
         public static void refreshMap()
         {
-            RpgEE.RefreshMap(RpgEEForm, map.PictureBox);
+            map.RefreshMap(RpgEEForm, map.PictureBox);
         }
 
         #endregion
-
-        public static int getMapHeight()
-        {
-            return mapTable.GetControlFromPosition(1, 1).Bottom - mapTable.GetControlFromPosition(1, 1).Top;
-        }
-
-        public static int getMapWidth()
-        {
-            return mapTable.GetControlFromPosition(1, 1).Right - mapTable.GetControlFromPosition(1, 1).Left;
-        }
-
-        private void changeMapStatus(Map.Status newStatus)
-        {
-            map.PictureBox.Inspecting = false;
-            map.status = newStatus;
-
-            switch (newStatus)
-            {
-                case Map.Status.Inspect:
-                    map.PictureBox.Inspecting = true;
-                    break;
-            }
-        }
     }
 }
