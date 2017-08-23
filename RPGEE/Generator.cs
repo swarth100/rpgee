@@ -260,37 +260,9 @@ namespace RPGEE
             Generator<PictureBox>.addObject(obj, mapHelper, 0, 0);
             obj.Dock = DockStyle.None;
 
-            mapHelper.Resize += mapHelper_Resize;
+            mapHelper.Resize += obj.OnResize;
 
             return obj;
-        }
-
-        private static void mapHelper_Resize(object sender, EventArgs e)
-        {
-            TableLayoutPanel mapHelper = sender as TableLayoutPanel;
-
-            int deltaHeight = (mapHelper.Height - RpgEE.map.PictureBox.Height)/2;
-            
-            if (deltaHeight > 0)
-            {
-                RpgEE.map.PictureBox.Top = deltaHeight;
-            }
-            else if (RpgEE.map.PictureBox.Bounds.Y + RpgEE.map.PictureBox.Height < mapHelper.Height)
-            {
-                RpgEE.map.PictureBox.Top = mapHelper.Height - RpgEE.map.PictureBox.Height;
-            }
-
-            int deltaWidth = (mapHelper.Width - RpgEE.map.PictureBox.Width) / 2;
-
-            if (deltaWidth > 0)
-            {
-                RpgEE.map.PictureBox.Left = deltaWidth;
-            }
-            else if (RpgEE.map.PictureBox.Bounds.X + RpgEE.map.PictureBox.Width < mapHelper.Width)
-            {
-                RpgEE.map.PictureBox.Left = mapHelper.Width - RpgEE.map.PictureBox.Width;
-            }
-
         }
 
         /** Public function to add and dock a new ListViewItem into a given ListViewEx(tended) list.
