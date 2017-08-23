@@ -326,17 +326,27 @@ namespace RPGEE
 
         public void drawPoint(Point p)
         {
-            drawPointHelper(p, true);
+            drawPointHelper(p, true, true);
+        }
+
+        public void drawPointNoRender(Point p)
+        {
+            drawPointHelper(p, true, false);
         }
 
         public void erasePoint(Point p)
         {
-            drawPointHelper(p, false);
+            drawPointHelper(p, false, true);
+        }
+
+        public void erasePointNoRender(Point p)
+        {
+            drawPointHelper(p, false, false);
         }
 
         /** Private function invoked during a Draw Event to the screen. Can both draw or erase.
          * Map must be in Draw/Erase Status and cursor can be dragged */
-        private void drawPointHelper(Point p, bool draw)
+        private void drawPointHelper(Point p, bool draw, bool render)
         {
             /* Round the given cursor point to the nearest grid-alligned blockSize square */
             Point roundP = getRoundPoint(p);
@@ -366,7 +376,8 @@ namespace RPGEE
                     curZone.removePoint(roundP);
 
                 /* Render all overlays onto the screen */
-                renderPoint(roundP);
+                if (render)
+                    renderPoint(getRoundPoint(p));
             }
         }
 

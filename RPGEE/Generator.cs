@@ -260,6 +260,8 @@ namespace RPGEE
             Generator<PictureBox>.addObject(obj, mapHelper, 0, 0);
             obj.Dock = DockStyle.None;
 
+            mapHelper.Resize += obj.OnResize;
+
             return obj;
         }
 
