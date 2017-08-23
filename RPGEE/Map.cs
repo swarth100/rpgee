@@ -16,6 +16,7 @@ namespace RPGEE
             Move,
             Draw,
             Inspect,
+            Insert,
             Delete
         }
 
@@ -423,6 +424,19 @@ namespace RPGEE
             inspectTt.SetToolTip(PictureBox, text);
         }
 
+        public void changeMapStatus(Map.Status newStatus, Control control)
+        {
+            PictureBox.Inspecting = false;
+            status = newStatus;
+
+            switch (newStatus)
+            {
+                case Map.Status.Inspect:
+                    PictureBox.Inspecting = true;
+                    break;
+            }
+        }
+
         #region mapRender
 
         /** Private helper function to render a newly drawn point onto the screen.
@@ -485,6 +499,45 @@ namespace RPGEE
         {
             screen.DrawImage(img, new Point(0, 0));
         }
-#endregion
+        #endregion
+
+        delegate void SpawnMapCallback(Form form, TableLayoutPanel panel, Label label);
+
+        public void SpawnMap(Form form, TableLayoutPanel panel, Label label)
+        {
+            /** InvokeRequired required compares the thread ID of the 
+             * calling thread to the thread ID of the creating thread. 
+             * If these threads are different, it returns true. */
+            if (panel.InvokeRequired)
+            {
+                SpawnMapCallback cb = new SpawnMapCallback(SpawnMap);
+                form.Invoke(cb, new object[] { form, panel, label });
+            }
+            else
+            {
+                /* Substitute the load placeholder label with the new image */
+                panel.Controls.Remove(label);
+                Generator<PictureBox>.addDraggablePictureBox(PictureBox, panel, 1, 1);
+            }
+        }
+
+        delegate void RefreshMapCallback(Form form, DraggablePictureBox img);
+
+        public void RefreshMap(Form form, DraggablePictureBox img)
+        {
+            /** InvokeRequired required compares the thread ID of the 
+             * calling thread to the thread ID of the creating thread. 
+             * If these threads are different, it returns true. */
+            if (img.InvokeRequired)
+            {
+                RefreshMapCallback cb = new RefreshMapCallback(RefreshMap);
+                form.Invoke(cb, new object[] { form, img });
+            }
+            else
+            {
+                /* Refresh the image */
+                img.Refresh();
+            }
+        }
     }
 }
