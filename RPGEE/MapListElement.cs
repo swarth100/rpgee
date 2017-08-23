@@ -154,6 +154,7 @@ namespace RPGEE
         public static  void colorBtn_Click(object sender, System.EventArgs e)
         {
             MapListButton button = sender as MapListButton;
+            RpgEE.map.changeSelectedZone(button.ListParent.getListIndex());
 
             button.spawnColorDialog();
         }
