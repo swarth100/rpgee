@@ -45,9 +45,9 @@ namespace RPGEE
             mousePos = new DragMousePosition();
             mouseDrag = new DragMousePosition();
 
-            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.OnMouseDown);
-            this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.OnMouseMove);
-            this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.OnMouseUp);
+            this.MouseDown += this.OnMouseDown;
+            this.MouseMove += this.OnMouseMove;
+            this.MouseUp += this.OnMouseUp;
         }
 
         /* Handles release of the mouse button */
@@ -106,22 +106,48 @@ namespace RPGEE
                 else if (Drawing)
                 {
                     /* This event will draw new Zone's points onto the map */
-                    RpgEE.map.drawPoint(new Point(e.X, e.Y));
+                    this.map.drawPoint(new Point(e.X, e.Y));
                 }
                 else if (Erasing)
                 {
                     /* This event will erase a Zone's point from the map */
-                    RpgEE.map.erasePoint(new Point(e.X, e.Y));
+                    this.map.erasePoint(new Point(e.X, e.Y));
                 }
                 else if (Inspecting)
                 {
                     /* This event inspects the tiles present on the map */
-                    RpgEE.map.showTooltip(new Point(e.X, e.Y));
+                    this.map.showTooltip(new Point(e.X, e.Y));
                 }
 
                 /* Update the saved position of the dragged mouse */
                 mouseDrag.updatePosition(e);
             }
+        }
+
+        public void OnResize(object sender, EventArgs e)
+        {
+            if (this.Parent != null)
+            {
+                int deltaHeight = (this.Parent.Height - this.Height) / 2;
+
+                if (deltaHeight > 0)
+                    this.Top = deltaHeight;
+                else if (this.Bounds.Y + this.Height < this.Parent.Height)
+                    this.Top = this.Parent.Height - this.Height;
+
+                int deltaWidth = (this.Parent.Width - this.Width) / 2;
+
+                if (deltaWidth > 0)
+                    this.Left = deltaWidth;
+                else if (this.Bounds.X + this.Width < this.Parent.Width)
+                    this.Left = this.Parent.Width - this.Width;
+
+                if (this.Top > 0 && (this.Parent.Height < this.Height))
+                    this.Top = 0;
+                if (this.Left > 0 && (this.Parent.Width < this.Width))
+                    this.Left = 0;
+            }
+
         }
     }
 }
