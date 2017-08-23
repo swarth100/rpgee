@@ -84,6 +84,8 @@ namespace RPGEE
     public class MapZone : MapElement
     {
         private int[,] Data;
+        private int DataWidth;
+        private int DataHeight;
 
         /* Default fields */
         private int opacity = 150;
@@ -97,9 +99,11 @@ namespace RPGEE
             this.Name = this.Type + this.ID;
 
             /* Create the 2D array to store the data held by the overlay Zone */
-            this.Data = new int[map.Width/Map.blockSize + 1, map.Height/Map.blockSize + 1];
+            this.DataWidth = map.Width / Map.blockSize + 1;
+            this.DataHeight = map.Height / Map.blockSize + 1;
+            this.Data = new int[DataWidth, DataHeight];
 
-            /* */
+            /* Add the newly created element to the mapList's sideNav */
             Generator<Form>.addMapListItem(RpgEE.sideNavListView, this);
         }
 
@@ -148,6 +152,9 @@ namespace RPGEE
             /* Determine the Zone's corresponding color Button and change the background */
             Button colorBtn = (Button)RpgEE.sideNavListView.GetEmbeddedControl(ListViewEx.colorIndex, this.getListIndex());
             colorBtn.BackColor = transparentColor;
+
+            /* Change the color of the whole existing Zone rendered onto the map */
+            updateZoneColor(transparentColor);
         }
 
         /** Private helper method to handle Zone data selection/deselection */
@@ -166,6 +173,23 @@ namespace RPGEE
             RpgEE.sideNavListView.Items[this.getListIndex()].BackColor = newColor;
 
             RpgEE.sideNavListView.Update();
+        }
+
+        private void updateZoneColor (Color newColor)
+        {
+            for (int i = 0; i < DataWidth * Map.blockSize; i += Map.blockSize)
+            {
+                for (int j = 0; j < DataHeight * Map.blockSize; j += Map.blockSize)
+                {
+                    Point pt = new Point(i, j);
+                    if (isPointSelected(pt))
+                    {
+                        RpgEE.map.erasePointNoRender(pt);
+                        RpgEE.map.drawPointNoRender(pt);
+                    }
+                }
+            }
+            RpgEE.map.renderMap();
         }
 
         /** Private color helper randomiser */
