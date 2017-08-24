@@ -265,6 +265,20 @@ namespace RPGEE
             return obj;
         }
 
+        /** Public function to add a new button to a given TableLayoutPanel's bar
+         * The Status field indicates the field upon which this button can be toggled */
+        public static Button addStatusButton(Button btn, TableLayoutPanel table, int row, int col, Map.Status status)
+        {
+            btn = Generator<Button>.addObject(btn, table, row, col);
+
+            btn.Click += delegate (object sender, EventArgs e)
+            {
+                RpgEE.map.changeMapStatus(status, sender as Control);
+            };
+
+            return btn;
+        }
+
         /** Public function to add and dock a new ListViewItem into a given ListViewEx(tended) list.
          * The newly created object supports the Zone format for the Map screen of the Application */
         public static ListViewItem addMapListItem(ListViewEx list, MapElement obj)
