@@ -84,6 +84,7 @@ namespace RPGEE
     public class MapZone : MapElement
     {
         private int[,] Data;
+        private Object _DataLock = new Object();
         private int DataWidth;
         private int DataHeight;
 
@@ -99,9 +100,12 @@ namespace RPGEE
             this.Name = this.Type + this.ID;
 
             /* Create the 2D array to store the data held by the overlay Zone */
-            this.DataWidth = map.Width / Map.blockSize + 1;
-            this.DataHeight = map.Height / Map.blockSize + 1;
-            this.Data = new int[DataWidth, DataHeight];
+            lock (_DataLock)
+            {
+                this.DataWidth = map.Width / Map.blockSize + 1;
+                this.DataHeight = map.Height / Map.blockSize + 1;
+                this.Data = new int[DataWidth, DataHeight];
+            }
 
             /* Add the newly created element to the mapList's sideNav */
             Generator<Form>.addMapListItem(RpgEE.sideNavListView, this);
@@ -116,7 +120,8 @@ namespace RPGEE
         /** Public method to verify if a specific point's data has already been set */
         public bool isPointSelected (Point pt)
         {
-            return Data[pt.X / Map.blockSize, pt.Y / Map.blockSize] == 1;
+            lock (_DataLock)
+                return Data[pt.X / Map.blockSize, pt.Y / Map.blockSize] == 1;
         }
 
         /** Public method to un-set a specific Point's Zone data, reverting it back to false */
@@ -129,7 +134,7 @@ namespace RPGEE
          * It turns the background behind the Label blue (when selected) */
         public void selectBackground()
         {
-            selectorHelper(Color.CornflowerBlue);
+            selectorHelper(RpgEE.selectedColor);
         }
 
         /** Public method to de-select a given Zone
@@ -160,7 +165,8 @@ namespace RPGEE
         /** Private helper method to handle Zone data selection/deselection */
         private void setDataHelper (Point pt, int x)
         {
-            Data[pt.X / Map.blockSize, pt.Y / Map.blockSize] = x;
+            lock (_DataLock)
+                Data[pt.X / Map.blockSize, pt.Y / Map.blockSize] = x;
         }
 
         /** Private helper method to toggle Background colors of selectors
