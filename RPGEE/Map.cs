@@ -24,6 +24,7 @@ namespace RPGEE
 
         /* Edit status for the map */
         public Status status { get; set; }
+        public bool Editing { get; set; }
         public DraggablePictureBox PictureBox { get; set; }
 
         #region blockIds
@@ -168,6 +169,7 @@ namespace RPGEE
         private static int[] backgroundRef = new int[2000];
         private static int[] foregroundRef = new int[2000];
         private readonly ToolTip inspectTt;
+        private Button selectedButton = new Button();
 
         /* Image resource references */
         private static Image frontImage = Properties.Resources.BLOCKS_front;
@@ -408,11 +410,14 @@ namespace RPGEE
         /** Public function invoked by clicking on a Zone's Name Label */
         public void changeSelectedZone(int newZone)
         {
-            (MapElements[selectedZone] as MapZone).unselectBackground();
+            if (!Editing)
+            {
+                (MapElements[selectedZone] as MapZone).unselectBackground();
 
-            selectedZone = newZone;
+                selectedZone = newZone;
 
-            (MapElements[selectedZone] as MapZone).selectBackground();
+                (MapElements[selectedZone] as MapZone).selectBackground();
+            }
         }
 
         /** Helper method to show the tooltip overlay onto the map */
@@ -424,10 +429,17 @@ namespace RPGEE
             inspectTt.SetToolTip(PictureBox, text);
         }
 
+        /** Public method to update the Map's status
+         * It also handles toggling the adequate buttons (background etc) */
         public void changeMapStatus(Map.Status newStatus, Control control)
         {
             PictureBox.Inspecting = false;
             status = newStatus;
+
+            selectedButton.BackColor = RpgEE.normalColor;
+
+            control.BackColor = RpgEE.selectedColor;
+            selectedButton = control as Button;
 
             switch (newStatus)
             {
