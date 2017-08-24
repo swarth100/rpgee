@@ -50,6 +50,7 @@ namespace RPGEE
 
         /* Private fields */
         private ListViewEx List { get; }
+        private Label nameLbl;
 
         /* Constructor */
         public MapListButton(ListViewEx list, MapElement parent) : base()
@@ -65,8 +66,12 @@ namespace RPGEE
         {
             TextBox editBox = new TextBox() { Text = ListParent.Name };
 
+            /* Save the nameLabel to its private field */
+            nameLbl = List.GetEmbeddedControl(ListViewEx.nameIndex, ListParent.getListIndex()) as Label;
+
             /* Add focus event handlers */
             editBox.LostFocus += editBox_LostFocus;
+            editBox.KeyPress += editBox_EnterKey;
 
             replaceHelper(editBox);
 
@@ -79,7 +84,10 @@ namespace RPGEE
         private void replaceTextBox()
         {
             ListParent.Name = List.GetEmbeddedControl(0, ListParent.getListIndex()).Text;
-            Label nameLbl = new Label() { Text = ListParent.Name, TextAlign = ContentAlignment.MiddleCenter };
+            nameLbl.Text = ListParent.Name;
+
+            /* Make sure the new label is also selected */
+            nameLbl.BackColor = RpgEE.selectedColor;
 
             replaceHelper(nameLbl);
         }
@@ -137,7 +145,18 @@ namespace RPGEE
         /* Handles a lose focus event for the ListItem's name editBox */
         private void editBox_LostFocus(object sender, EventArgs e)
         {
-            replaceTextBox();
+            if (RpgEE.map.Editing)
+            {
+                RpgEE.map.Editing = false;
+
+                replaceTextBox();
+            }
+        }
+
+        private void editBox_EnterKey(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)Keys.Return)
+                editBox_LostFocus(sender, null);
         }
 
         #region btnClicks
@@ -147,6 +166,9 @@ namespace RPGEE
         public static void editBtn_Click(object sender, EventArgs e)
         {
             MapListButton button = sender as MapListButton;
+            RpgEE.map.changeSelectedZone(button.ListParent.getListIndex());
+
+            RpgEE.map.Editing = true;
 
             button.replaceLabel();
         }
