@@ -28,6 +28,10 @@ namespace RPGEE
 
         /* Public elements */
 
+        /* Colors */
+        public static Color normalColor = Color.Transparent;
+        public static Color selectedColor = Color.CornflowerBlue;
+
         /* Random generator */
         public static Random RandomGenerator = new Random();
         public static int ZoneID = 0;
@@ -182,26 +186,21 @@ namespace RPGEE
             mapBtnTable2 = Generator<TableLayoutPanel>.generateButtonTable(1, 5);
             Generator<TableLayoutPanel>.addObject(mapBtnTable2, sideNavTable, 2, 0);
 
-            moveMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.moveBtnImage },
-                mapBtnTable1, 0, 0);
-            moveMapBtn.Click += this.moveMapBtn_Click;
+            moveMapBtn = Generator<Button>.addStatusButton(new Button() { Image = Properties.Resources.moveBtnImage },
+                mapBtnTable1, 0, 0, Map.Status.Move);
 
-            drawMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.drawBtnImage },
-                mapBtnTable1, 1, 0);
-            drawMapBtn.Click += this.drawMapBtn_Click;
+            drawMapBtn = Generator<Button>.addStatusButton(new Button() { Image = Properties.Resources.drawBtnImage },
+                mapBtnTable1, 1, 0, Map.Status.Draw);
 
-            inspectMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.inspectBtnImage },
-                mapBtnTable1, 2, 0);
-            inspectMapBtn.Click += this.inspectMapBtn_Click;
+            inspectMapBtn = Generator<Button>.addStatusButton(new Button() { Image = Properties.Resources.inspectBtnImage },
+                mapBtnTable1, 2, 0, Map.Status.Inspect);
 
-            deleteMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.eraseBtnImage },
-                mapBtnTable1, 3, 0);
-            deleteMapBtn.Click += this.deleteMapBtn_Click;
+            deleteMapBtn = Generator<Button>.addStatusButton(new Button() { Image = Properties.Resources.eraseBtnImage },
+                mapBtnTable1, 3, 0, Map.Status.Delete);
 
             /* Initialise second level of buttons */
-            newPinMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.addBtnImage },
-                mapBtnTable1, 4, 0);
-            newPinMapBtn.Click += this.newPinMapBtn_Click;
+            newPinMapBtn = Generator<Button>.addStatusButton(new Button() { Image = Properties.Resources.addBtnImage },
+                mapBtnTable1, 4, 0, Map.Status.Insert);
 
             newMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.newBtnImage },
                 mapBtnTable2, 0, 0);
