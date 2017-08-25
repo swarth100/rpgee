@@ -34,7 +34,7 @@ namespace RPGEE
         {
             MapListLabel label = sender as MapListLabel;
 
-            RpgEE.map.changeSelectedZone((label.ListParent as MapZone).getListIndex());
+            RpgEE.map.changeSelectedElement((label.ListParent as MapElement).getListIndex());
         }
 
         #endregion
@@ -115,7 +115,7 @@ namespace RPGEE
 
             /* Update the text box color if the user clicks OK */
             if (MyDialog.ShowDialog() == DialogResult.OK)
-                (ListParent as MapZone).changeColor(MyDialog.Color);
+                (ListParent as MapElement).changeColor(MyDialog.Color);
         }
 
         /** Private method to toggle a given MapElement's visibility
@@ -166,7 +166,7 @@ namespace RPGEE
         public static void editBtn_Click(object sender, EventArgs e)
         {
             MapListButton button = sender as MapListButton;
-            RpgEE.map.changeSelectedZone(button.ListParent.getListIndex());
+            RpgEE.map.changeSelectedElement(button.ListParent.getListIndex());
 
             RpgEE.map.Editing = true;
 
@@ -176,7 +176,7 @@ namespace RPGEE
         public static  void colorBtn_Click(object sender, System.EventArgs e)
         {
             MapListButton button = sender as MapListButton;
-            RpgEE.map.changeSelectedZone(button.ListParent.getListIndex());
+            RpgEE.map.changeSelectedElement(button.ListParent.getListIndex());
 
             button.spawnColorDialog();
         }
