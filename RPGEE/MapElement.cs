@@ -151,9 +151,24 @@ namespace RPGEE
             };
         }
 
+        /** Helper method to erase a region (the size of a square blockSize) from a given zone's image
+         * It iterates and removes every single pixel */
+        protected void removeBitmapRegion(Point pt)
+        {
+            for (int i = 0; i < Map.blockSize; i++)
+                for (int j = 0; j < Map.blockSize; j++)
+                    (Image as Bitmap).SetPixel(pt.X + i, pt.Y + j, Color.Empty);
+        }
+
         protected String defaultName()
         {
             return this.Type + this.ID;
+        }
+
+        protected void addToGenerator()
+        {
+            /* Add the newly created element to the mapList's sideNav */
+            Generator<Form>.addMapListItem(RpgEE.sideNavListView, this);
         }
 
         /** Private color helper randomiser */
@@ -176,7 +191,9 @@ namespace RPGEE
             this.Brush = new SolidBrush(getRandomColor(opacity));
 
             this.Type = "Point";
-            this.Name = defaultName();
+            this.Name = this.defaultName();
+
+            this.addToGenerator();
         }
 
         override
@@ -184,9 +201,9 @@ namespace RPGEE
         {
             Position = pt;
             if (x == 0)
-                isPositionSet = true;
-            else
                 isPositionSet = false;
+            else
+                isPositionSet = true;
         }
 
         override
@@ -199,17 +216,19 @@ namespace RPGEE
         protected void updateElementColor(Color newColor)
         {
             RpgEE.map.erasePointNoRender(Position);
-            RpgEE.map.drawPointNoRender(Position);
+            RpgEE.map.drawPoint(Position);
         }
 
         protected override void drawPointHelper(Graphics graphics, Point pt)
         {
-            throw new NotImplementedException();
+            /* Remove the previously drawn point before drawing the new one */
+            RpgEE.map.erasePoint(Position);
+            graphics.FillEllipse(Brush, new Rectangle(pt, new Size(Map.blockSize, Map.blockSize)));
         }
 
         protected override void removePointHelper(Graphics graphics, Point pt)
         {
-            throw new NotImplementedException();
+            removeBitmapRegion(pt);
         }
     }
 
@@ -226,7 +245,7 @@ namespace RPGEE
             this.Brush = new SolidBrush(getRandomColor(opacity));
 
             this.Type = "Zone";
-            this.Name = defaultName();
+            this.Name = this.defaultName();
 
             /* Create the 2D array to store the data held by the overlay Zone */
             lock (_DataLock)
@@ -236,8 +255,7 @@ namespace RPGEE
                 this.Data = new int[DataWidth, DataHeight];
             }
 
-            /* Add the newly created element to the mapList's sideNav */
-            Generator<Form>.addMapListItem(RpgEE.sideNavListView, this);
+            this.addToGenerator();
         }
 
         /** Public method to verify if a specific point's data has already been set */
@@ -284,15 +302,6 @@ namespace RPGEE
         protected void removePointHelper(Graphics graphics, Point pt)
         {
             removeBitmapRegion(pt);
-        }
-
-        /** Helper method to erase a region (the size of a square blockSize) from a given zone's image
-         * It iterates and removes every single pixel */
-        private void removeBitmapRegion(Point pt)
-        {
-            for (int i = 0; i < Map.blockSize; i++)
-                for (int j = 0; j < Map.blockSize; j++)
-                    (Image as Bitmap).SetPixel(pt.X + i, pt.Y + j, Color.Empty);
         }
     }
 }
