@@ -16,7 +16,6 @@ namespace RPGEE
             Move,
             Draw,
             Inspect,
-            Insert,
             Delete
         }
 
@@ -252,7 +251,7 @@ namespace RPGEE
 
             /* Initialise zones */
             MapZone defaultZone = new MapZone(PictureBox.Image, MapElements);
-            changeSelectedZone(defaultZone.getListIndex());
+            changeSelectedElement(defaultZone.getListIndex());
 
             /* Clone the new image as the map */
             map = new Bitmap(PictureBox.Image.Width, PictureBox.Image.Height);
@@ -355,21 +354,21 @@ namespace RPGEE
             Point roundP = getRoundPoint(p);
 
             /* Determine which zone is currently selected for drawing */
-            MapZone curZone = (MapElements[selectedZone] as MapZone);
+            MapElement curElem = (MapElements[selectedZone] as MapElement);
 
-            bool drawnPoint = curZone.isPointSelected(roundP);
+            bool drawnPoint = curElem.isPointSelected(roundP);
 
             /* Check if the given MapZone has been set to visible and is drawable */
-            if (curZone.Visible && ((!drawnPoint && draw) || (drawnPoint && !draw)))
+            if (curElem.Visible && ((!drawnPoint && draw) || (drawnPoint && !draw)))
             {
                 /* Render the new point onto the current Zone's overlay */
-                using (var overlayGraphics = Graphics.FromImage(curZone.Image))
+                using (var overlayGraphics = Graphics.FromImage(curElem.Image))
                 {
                     /* Conditionally draw or erase to the DataMap and update the Image */
                     if (draw)
-                        curZone.addPoint(overlayGraphics, roundP);
+                        curElem.addPoint(overlayGraphics, roundP);
                     else
-                        curZone.removePoint(overlayGraphics, roundP);
+                        curElem.removePoint(overlayGraphics, roundP);
                 }
 
                 /* Render all overlays onto the screen */
@@ -389,19 +388,29 @@ namespace RPGEE
         /** Public function invoked to spawn a new Zone to be drawn onto the map */
         public void addNewZone()
         {
-            changeSelectedZone(new MapZone(map, MapElements).getListIndex());
+            addNewElement(new MapZone(map, MapElements));
+        }
+
+        public void addNewPoint()
+        {
+            addNewElement(new MapPoint(map, MapElements));
+        }
+
+        private void addNewElement(MapElement element)
+        {
+            changeSelectedElement(element.getListIndex());
         }
 
         /** Public function invoked by clicking on a Zone's Name Label */
-        public void changeSelectedZone(int newZone)
+        public void changeSelectedElement(int newZone)
         {
             if (!Editing)
             {
-                (MapElements[selectedZone] as MapZone).unselectBackground();
+                (MapElements[selectedZone] as MapElement).unselectBackground();
 
                 selectedZone = newZone;
 
-                (MapElements[selectedZone] as MapZone).selectBackground();
+                (MapElements[selectedZone] as MapElement).selectBackground();
             }
         }
 
@@ -448,8 +457,8 @@ namespace RPGEE
                 renderPointHelper(screen, map, rect);
 
                 /* Render every zone with the given update area */
-                foreach (MapZone zone in MapElements)
-                    renderPointHelper(screen, zone.Image, rect);
+                foreach (MapElement element in MapElements)
+                    renderPointHelper(screen, element.Image, rect);
             }
 
             RpgEE.refreshMap();
@@ -478,9 +487,9 @@ namespace RPGEE
                 renderMapHelper(screen, map);
 
                 /* Render every zone's entire overlay */
-                foreach (MapZone zone in MapElements)
-                    if (zone.Visible)
-                        renderMapHelper(screen, zone.Image);
+                foreach (MapElement element in MapElements)
+                    if (element.Visible)
+                        renderMapHelper(screen, element.Image);
             }
 
             RpgEE.refreshMap();
@@ -489,7 +498,7 @@ namespace RPGEE
         public void resetSelectedZone(int x)
         {
             if (selectedZone == x || selectedZone == RpgEE.sideNavListView.Items.Count - 1)
-                changeSelectedZone(0);
+                changeSelectedElement(0);
         }
 
         private void renderMapHelper(Graphics screen, Image img)
