@@ -12,7 +12,7 @@ namespace RPGEE
      * MapElements have Images and Brushes associated to them.
      * They have a name and a Type
      * They are collected into a list from which they can be ordered and/or removed */
-    public class MapElement
+    public abstract class MapElement
     {
         public Image Image { get; set; }
         public Brush Brush { get; set; }
@@ -22,6 +22,7 @@ namespace RPGEE
 
         /* Private fields */
         protected int ID { get; }
+        protected int opacity;
 
         private readonly List<MapElement> ElementList;
 
@@ -29,6 +30,9 @@ namespace RPGEE
         {
             this.ID = RpgEE.ZoneID++;
             this.Visible = true;
+
+            /* Default image is the size of the map */
+            this.Image = new Bitmap(map.Width, map.Height);
 
             /* Store a reference to the Object's reference list */
             this.ElementList = list;
@@ -72,63 +76,19 @@ namespace RPGEE
             RpgEE.map.renderMap();
         }
 
-        /** Private helper method to sort out Zones by ID */
-        private static Predicate<MapElement> FindByID(int ID)
-        {
-            return delegate (MapElement element)
-            {
-                return element.ID == ID;
-            };
-        }
-    }
-    public class MapZone : MapElement
-    {
-        private int[,] Data;
-        private Object _DataLock = new Object();
-        private int DataWidth;
-        private int DataHeight;
-
-        /* Default fields */
-        private int opacity = 150;
-
-        public MapZone(Image map, List<MapElement> list) : base(map, list)
-        {
-            this.Image = new Bitmap(map.Width, map.Height);
-            this.Brush = new SolidBrush(getRandomColor());
-
-            this.Type = "Zone";
-            this.Name = this.Type + this.ID;
-
-            /* Create the 2D array to store the data held by the overlay Zone */
-            lock (_DataLock)
-            {
-                this.DataWidth = map.Width / Map.blockSize + 1;
-                this.DataHeight = map.Height / Map.blockSize + 1;
-                this.Data = new int[DataWidth, DataHeight];
-            }
-
-            /* Add the newly created element to the mapList's sideNav */
-            Generator<Form>.addMapListItem(RpgEE.sideNavListView, this);
-        }
-
         /** Public method to set a specific Point's Zone data to true */
-        public void addPoint (Point pt)
+        public void addPoint(Point pt)
         {
-            setDataHelper(pt, 1);
-        }
-
-        /** Public method to verify if a specific point's data has already been set */
-        public bool isPointSelected (Point pt)
-        {
-            lock (_DataLock)
-                return Data[pt.X / Map.blockSize, pt.Y / Map.blockSize] == 1;
+            setDataPoint(pt, 1);
         }
 
         /** Public method to un-set a specific Point's Zone data, reverting it back to false */
         public void removePoint(Point pt)
         {
-            setDataHelper(pt, 0);
+            setDataPoint(pt, 0);
         }
+
+        protected abstract void setDataPoint(Point pt, int x);
 
         /** Public method to select a given Zone
          * It turns the background behind the Label blue (when selected) */
@@ -143,6 +103,8 @@ namespace RPGEE
         {
             selectorHelper(Color.Transparent);
         }
+
+        public abstract bool isPointSelected(Point pt);
 
         /** Public method to change the Zone's Brush's color
          * It updates also the BackColor of the Zone's color selector button */
@@ -159,19 +121,14 @@ namespace RPGEE
             colorBtn.BackColor = transparentColor;
 
             /* Change the color of the whole existing Zone rendered onto the map */
-            updateZoneColor(transparentColor);
+            updateElementColor(transparentColor);
         }
 
-        /** Private helper method to handle Zone data selection/deselection */
-        private void setDataHelper (Point pt, int x)
-        {
-            lock (_DataLock)
-                Data[pt.X / Map.blockSize, pt.Y / Map.blockSize] = x;
-        }
+        protected abstract void updateElementColor(Color newColor);
 
         /** Private helper method to toggle Background colors of selectors
          * Handles also view updates to finalise them */
-        private void selectorHelper (Color newColor)
+        private void selectorHelper(Color newColor)
         {
             RpgEE.sideNavListView.GetEmbeddedControl(ListViewEx.nameIndex, this.getListIndex()).BackColor = newColor;
             RpgEE.sideNavListView.GetEmbeddedControl(ListViewEx.typeIndex, this.getListIndex()).BackColor = newColor;
@@ -181,7 +138,108 @@ namespace RPGEE
             RpgEE.sideNavListView.Update();
         }
 
-        private void updateZoneColor (Color newColor)
+        /** Private helper method to sort out Zones by ID */
+        private static Predicate<MapElement> FindByID(int ID)
+        {
+            return delegate (MapElement element)
+            {
+                return element.ID == ID;
+            };
+        }
+
+        protected String defaultName()
+        {
+            return this.Type + this.ID;
+        }
+
+        /** Private color helper randomiser */
+        protected Color getRandomColor(int opacity)
+        {
+            /* If opacity is != from 255 it is semi-transparent */
+            return Color.FromArgb(opacity, RpgEE.RandomGenerator.Next(256), RpgEE.RandomGenerator.Next(256), RpgEE.RandomGenerator.Next(256));
+        }
+    }
+
+    public class MapPoint : MapElement
+    {
+        private Point Position;
+        private Object _PositionLock = new Object();
+
+        public MapPoint(Image map, List<MapElement> list) : base(map, list)
+        {
+            this.Brush = new SolidBrush(getRandomColor(opacity));
+
+            this.Type = "Point";
+            this.Name = defaultName();
+
+            this.opacity = 200;
+        }
+
+        override
+        protected void setDataPoint(Point pt, int x)
+        {
+            throw new NotImplementedException();
+        }
+
+        override
+        public bool isPointSelected(Point pt)
+        {
+            throw new NotImplementedException();
+        }
+
+        override
+        protected void updateElementColor(Color newColor)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public class MapZone : MapElement
+    {
+        private int[,] Data;
+        private Object _DataLock = new Object();
+        private int DataWidth;
+        private int DataHeight;
+
+        public MapZone(Image map, List<MapElement> list) : base(map, list)
+        {
+            this.Brush = new SolidBrush(getRandomColor(opacity));
+
+            this.Type = "Zone";
+            this.Name = defaultName();
+
+            this.opacity = 150;
+
+            /* Create the 2D array to store the data held by the overlay Zone */
+            lock (_DataLock)
+            {
+                this.DataWidth = map.Width / Map.blockSize + 1;
+                this.DataHeight = map.Height / Map.blockSize + 1;
+                this.Data = new int[DataWidth, DataHeight];
+            }
+
+            /* Add the newly created element to the mapList's sideNav */
+            Generator<Form>.addMapListItem(RpgEE.sideNavListView, this);
+        }
+
+        /** Public method to verify if a specific point's data has already been set */
+        override
+        public bool isPointSelected (Point pt)
+        {
+            lock (_DataLock)
+                return Data[pt.X / Map.blockSize, pt.Y / Map.blockSize] == 1;
+        }
+
+        /** Private helper method to handle Zone data selection/deselection */
+        override
+        protected void setDataPoint (Point pt, int x)
+        {
+            lock (_DataLock)
+                Data[pt.X / Map.blockSize, pt.Y / Map.blockSize] = x;
+        }
+
+        override
+        protected void updateElementColor (Color newColor)
         {
             for (int i = 0; i < DataWidth * Map.blockSize; i += Map.blockSize)
             {
@@ -196,13 +254,6 @@ namespace RPGEE
                 }
             }
             RpgEE.map.renderMap();
-        }
-
-        /** Private color helper randomiser */
-        private Color getRandomColor()
-        {
-            /* If opacity is != from 255 it is semi-transparent */
-            return Color.FromArgb(opacity, RpgEE.RandomGenerator.Next(256), RpgEE.RandomGenerator.Next(256), RpgEE.RandomGenerator.Next(256));
         }
     }
 }
