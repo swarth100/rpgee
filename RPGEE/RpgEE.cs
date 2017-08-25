@@ -199,12 +199,16 @@ namespace RPGEE
                 mapBtnTable1, 3, 0, Map.Status.Delete);
 
             /* Initialise second level of buttons */
-            newPinMapBtn = Generator<Button>.addStatusButton(new Button() { Image = Properties.Resources.addBtnImage },
-                mapBtnTable1, 4, 0, Map.Status.Insert);
-
             newMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.newBtnImage },
                 mapBtnTable2, 0, 0);
             newMapBtn.Click += this.newMapBtn_Click;
+
+            newPinMapBtn = Generator<Button>.addObject(new Button() { Image = Properties.Resources.addBtnImage },
+                mapBtnTable2, 1, 0);
+            newPinMapBtn.Click += this.newPinMapBtn_Click;
+
+            /* Select moveButton as default */
+            moveMapBtn_Click(moveMapBtn, null);
 
             /* Temporary button placeholders */
             backBtn = Generator<Button>.addObject(new Button() { Text = "Back" }, mapTable, 0, 0);
@@ -274,7 +278,7 @@ namespace RPGEE
 
         void newPinMapBtn_Click(object sender, EventArgs e)
         {
-            map.changeMapStatus(Map.Status.Insert, sender as Control);
+            map.addNewPoint();
         }
 
         #endregion
