@@ -365,18 +365,12 @@ namespace RPGEE
                 /* Render the new point onto the current Zone's overlay */
                 using (var overlayGraphics = Graphics.FromImage(curZone.Image))
                 {
-                    /* Conditionally draw or erase to the Image */
+                    /* Conditionally draw or erase to the DataMap and update the Image */
                     if (draw)
-                        overlayGraphics.FillRectangle(curZone.Brush, new Rectangle(roundP, new Size(blockSize, blockSize)));
+                        curZone.addPoint(overlayGraphics, roundP);
                     else
-                        removeBitmapRegion(roundP, curZone);
+                        curZone.removePoint(overlayGraphics, roundP);
                 }
-
-                /* Conditionally draw or erase to the DataMap */
-                if (draw)
-                    curZone.addPoint(roundP);
-                else
-                    curZone.removePoint(roundP);
 
                 /* Render all overlays onto the screen */
                 if (render)
@@ -388,15 +382,6 @@ namespace RPGEE
         private Point getRoundPoint(Point p)
         {
             return new Point(((int)p.X / blockSize) * blockSize, ((int)p.Y / blockSize) * blockSize);
-        }
-
-        /** Helper method to erase a region (the size of a square blockSize) from a given zone's image
-         * It iterates and removes every single pixel */
-        private void removeBitmapRegion(Point pt, MapZone curZone)
-        {
-            for (int i = 0; i < blockSize; i++)
-                for (int j = 0; j < blockSize; j++)
-                    (curZone.Image as Bitmap).SetPixel(pt.X + i, pt.Y + j, Color.Empty);
         }
 
         #endregion
