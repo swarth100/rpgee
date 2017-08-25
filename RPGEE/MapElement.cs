@@ -77,17 +77,21 @@ namespace RPGEE
         }
 
         /** Public method to set a specific Point's Zone data to true */
-        public void addPoint(Point pt)
+        public void addPoint(Graphics graphics, Point pt)
         {
+            drawPointHelper(graphics, pt);
             setDataPoint(pt, 1);
         }
 
         /** Public method to un-set a specific Point's Zone data, reverting it back to false */
-        public void removePoint(Point pt)
+        public void removePoint(Graphics graphics, Point pt)
         {
+            removePointHelper(graphics, pt);
             setDataPoint(pt, 0);
         }
 
+        protected abstract void drawPointHelper(Graphics graphics, Point pt);
+        protected abstract void removePointHelper(Graphics graphics, Point pt);
         protected abstract void setDataPoint(Point pt, int x);
 
         /** Public method to select a given Zone
@@ -163,32 +167,47 @@ namespace RPGEE
     public class MapPoint : MapElement
     {
         private Point Position;
+        private bool isPositionSet;
         private Object _PositionLock = new Object();
 
         public MapPoint(Image map, List<MapElement> list) : base(map, list)
         {
+            this.opacity = 200;
             this.Brush = new SolidBrush(getRandomColor(opacity));
 
             this.Type = "Point";
             this.Name = defaultName();
-
-            this.opacity = 200;
         }
 
         override
         protected void setDataPoint(Point pt, int x)
         {
-            throw new NotImplementedException();
+            Position = pt;
+            if (x == 0)
+                isPositionSet = true;
+            else
+                isPositionSet = false;
         }
 
         override
         public bool isPointSelected(Point pt)
         {
-            throw new NotImplementedException();
+            return pt.Equals(Position) && isPositionSet;
         }
 
         override
         protected void updateElementColor(Color newColor)
+        {
+            RpgEE.map.erasePointNoRender(Position);
+            RpgEE.map.drawPointNoRender(Position);
+        }
+
+        protected override void drawPointHelper(Graphics graphics, Point pt)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void removePointHelper(Graphics graphics, Point pt)
         {
             throw new NotImplementedException();
         }
@@ -203,12 +222,11 @@ namespace RPGEE
 
         public MapZone(Image map, List<MapElement> list) : base(map, list)
         {
+            this.opacity = 150;
             this.Brush = new SolidBrush(getRandomColor(opacity));
 
             this.Type = "Zone";
             this.Name = defaultName();
-
-            this.opacity = 150;
 
             /* Create the 2D array to store the data held by the overlay Zone */
             lock (_DataLock)
@@ -254,6 +272,27 @@ namespace RPGEE
                 }
             }
             RpgEE.map.renderMap();
+        }
+
+        override
+        protected void drawPointHelper(Graphics graphics, Point pt)
+        {
+            graphics.FillRectangle(Brush, new Rectangle(pt, new Size(Map.blockSize, Map.blockSize)));
+        }
+
+        override
+        protected void removePointHelper(Graphics graphics, Point pt)
+        {
+            removeBitmapRegion(pt);
+        }
+
+        /** Helper method to erase a region (the size of a square blockSize) from a given zone's image
+         * It iterates and removes every single pixel */
+        private void removeBitmapRegion(Point pt)
+        {
+            for (int i = 0; i < Map.blockSize; i++)
+                for (int j = 0; j < Map.blockSize; j++)
+                    (Image as Bitmap).SetPixel(pt.X + i, pt.Y + j, Color.Empty);
         }
     }
 }
