@@ -23,6 +23,7 @@ namespace RPGEE
 
         /* Edit status for the map */
         public Status status { get; set; }
+        public bool Editing { get; set; }
         public DraggablePictureBox PictureBox { get; set; }
 
         #region blockIds
@@ -167,6 +168,7 @@ namespace RPGEE
         private static int[] backgroundRef = new int[2000];
         private static int[] foregroundRef = new int[2000];
         private readonly ToolTip inspectTt;
+        private Button selectedButton = new Button();
 
         /* Image resource references */
         private static Image frontImage = Properties.Resources.BLOCKS_front;
@@ -249,7 +251,7 @@ namespace RPGEE
 
             /* Initialise zones */
             MapZone defaultZone = new MapZone(PictureBox.Image, MapElements);
-            changeSelectedZone(defaultZone.getListIndex());
+            changeSelectedElement(defaultZone.getListIndex());
 
             /* Clone the new image as the map */
             map = new Bitmap(PictureBox.Image.Width, PictureBox.Image.Height);
@@ -352,28 +354,22 @@ namespace RPGEE
             Point roundP = getRoundPoint(p);
 
             /* Determine which zone is currently selected for drawing */
-            MapZone curZone = (MapElements[selectedZone] as MapZone);
+            MapElement curElem = (MapElements[selectedZone] as MapElement);
 
-            bool drawnPoint = curZone.isPointSelected(roundP);
+            bool drawnPoint = curElem.isPointSelected(roundP);
 
             /* Check if the given MapZone has been set to visible and is drawable */
-            if (curZone.Visible && ((!drawnPoint && draw) || (drawnPoint && !draw)))
+            if (curElem.Visible && ((!drawnPoint && draw) || (drawnPoint && !draw)))
             {
                 /* Render the new point onto the current Zone's overlay */
-                using (var overlayGraphics = Graphics.FromImage(curZone.Image))
+                using (var overlayGraphics = Graphics.FromImage(curElem.Image))
                 {
-                    /* Conditionally draw or erase to the Image */
+                    /* Conditionally draw or erase to the DataMap and update the Image */
                     if (draw)
-                        overlayGraphics.FillRectangle(curZone.Brush, new Rectangle(roundP, new Size(blockSize, blockSize)));
+                        curElem.addPoint(overlayGraphics, roundP);
                     else
-                        removeBitmapRegion(roundP, curZone);
+                        curElem.removePoint(overlayGraphics, roundP);
                 }
-
-                /* Conditionally draw or erase to the DataMap */
-                if (draw)
-                    curZone.addPoint(roundP);
-                else
-                    curZone.removePoint(roundP);
 
                 /* Render all overlays onto the screen */
                 if (render)
@@ -387,31 +383,35 @@ namespace RPGEE
             return new Point(((int)p.X / blockSize) * blockSize, ((int)p.Y / blockSize) * blockSize);
         }
 
-        /** Helper method to erase a region (the size of a square blockSize) from a given zone's image
-         * It iterates and removes every single pixel */
-        private void removeBitmapRegion(Point pt, MapZone curZone)
-        {
-            for (int i = 0; i < blockSize; i++)
-                for (int j = 0; j < blockSize; j++)
-                    (curZone.Image as Bitmap).SetPixel(pt.X + i, pt.Y + j, Color.Empty);
-        }
-
         #endregion
 
         /** Public function invoked to spawn a new Zone to be drawn onto the map */
         public void addNewZone()
         {
-            changeSelectedZone(new MapZone(map, MapElements).getListIndex());
+            addNewElement(new MapZone(map, MapElements));
+        }
+
+        public void addNewPoint()
+        {
+            addNewElement(new MapPoint(map, MapElements));
+        }
+
+        private void addNewElement(MapElement element)
+        {
+            changeSelectedElement(element.getListIndex());
         }
 
         /** Public function invoked by clicking on a Zone's Name Label */
-        public void changeSelectedZone(int newZone)
+        public void changeSelectedElement(int newZone)
         {
-            (MapElements[selectedZone] as MapZone).unselectBackground();
+            if (!Editing)
+            {
+                (MapElements[selectedZone] as MapElement).unselectBackground();
 
-            selectedZone = newZone;
+                selectedZone = newZone;
 
-            (MapElements[selectedZone] as MapZone).selectBackground();
+                (MapElements[selectedZone] as MapElement).selectBackground();
+            }
         }
 
         /** Helper method to show the tooltip overlay onto the map */
@@ -421,6 +421,26 @@ namespace RPGEE
             String text = "X: " + roundPt.X/16 + ", Y: " + roundPt.Y/16;
 
             inspectTt.SetToolTip(PictureBox, text);
+        }
+
+        /** Public method to update the Map's status
+         * It also handles toggling the adequate buttons (background etc) */
+        public void changeMapStatus(Map.Status newStatus, Control control)
+        {
+            PictureBox.Inspecting = false;
+            status = newStatus;
+
+            selectedButton.BackColor = RpgEE.normalColor;
+
+            control.BackColor = RpgEE.selectedColor;
+            selectedButton = control as Button;
+
+            switch (newStatus)
+            {
+                case Map.Status.Inspect:
+                    PictureBox.Inspecting = true;
+                    break;
+            }
         }
 
         #region mapRender
@@ -437,8 +457,8 @@ namespace RPGEE
                 renderPointHelper(screen, map, rect);
 
                 /* Render every zone with the given update area */
-                foreach (MapZone zone in MapElements)
-                    renderPointHelper(screen, zone.Image, rect);
+                foreach (MapElement element in MapElements)
+                    renderPointHelper(screen, element.Image, rect);
             }
 
             RpgEE.refreshMap();
@@ -467,9 +487,9 @@ namespace RPGEE
                 renderMapHelper(screen, map);
 
                 /* Render every zone's entire overlay */
-                foreach (MapZone zone in MapElements)
-                    if (zone.Visible)
-                        renderMapHelper(screen, zone.Image);
+                foreach (MapElement element in MapElements)
+                    if (element.Visible)
+                        renderMapHelper(screen, element.Image);
             }
 
             RpgEE.refreshMap();
@@ -478,13 +498,52 @@ namespace RPGEE
         public void resetSelectedZone(int x)
         {
             if (selectedZone == x || selectedZone == RpgEE.sideNavListView.Items.Count - 1)
-                changeSelectedZone(0);
+                changeSelectedElement(0);
         }
 
         private void renderMapHelper(Graphics screen, Image img)
         {
             screen.DrawImage(img, new Point(0, 0));
         }
-#endregion
+        #endregion
+
+        delegate void SpawnMapCallback(Form form, TableLayoutPanel panel, Label label);
+
+        public void SpawnMap(Form form, TableLayoutPanel panel, Label label)
+        {
+            /** InvokeRequired required compares the thread ID of the 
+             * calling thread to the thread ID of the creating thread. 
+             * If these threads are different, it returns true. */
+            if (panel.InvokeRequired)
+            {
+                SpawnMapCallback cb = new SpawnMapCallback(SpawnMap);
+                form.Invoke(cb, new object[] { form, panel, label });
+            }
+            else
+            {
+                /* Substitute the load placeholder label with the new image */
+                panel.Controls.Remove(label);
+                Generator<PictureBox>.addDraggablePictureBox(PictureBox, panel, 1, 1);
+            }
+        }
+
+        delegate void RefreshMapCallback(Form form, DraggablePictureBox img);
+
+        public void RefreshMap(Form form, DraggablePictureBox img)
+        {
+            /** InvokeRequired required compares the thread ID of the 
+             * calling thread to the thread ID of the creating thread. 
+             * If these threads are different, it returns true. */
+            if (img.InvokeRequired)
+            {
+                RefreshMapCallback cb = new RefreshMapCallback(RefreshMap);
+                form.Invoke(cb, new object[] { form, img });
+            }
+            else
+            {
+                /* Refresh the image */
+                img.Refresh();
+            }
+        }
     }
 }

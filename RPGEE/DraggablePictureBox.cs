@@ -35,6 +35,11 @@ namespace RPGEE
                 X = e.X;
                 Y = e.Y;
             }
+
+            public void resetPositions()
+            {
+                X = Y = 0;
+            }
         }
 
         public DraggablePictureBox(Map map) : base()
@@ -63,6 +68,7 @@ namespace RPGEE
         {
             if (e.Button == MouseButtons.Left)
             {
+                /* Set booleans accordingly to the map Status */
                 if (map.status == Map.Status.Move)
                 {
                     Dragging = true;
@@ -70,8 +76,9 @@ namespace RPGEE
                     mousePos.updatePosition(e);
                     mouseDrag.updatePosition(e);
 
-                    maxBottomPos = RpgEE.getMapHeight();
-                    maxRightPos = RpgEE.getMapWidth();
+                    /* Prevent map to be dragged out of bounds w.r.t. the container */
+                    maxBottomPos = RpgEE.map.PictureBox.Parent.Height;
+                    maxRightPos = RpgEE.map.PictureBox.Parent.Width;
                 }
                 else if (map.status == Map.Status.Draw)
                 {
@@ -81,6 +88,10 @@ namespace RPGEE
                 {
                     Erasing = true;
                 }
+
+                /* Forcefully reset the saved mouse position and apply a Move Event */
+                mouseDrag.resetPositions();
+                OnMouseMove(sender, e);
             }
         }
 
@@ -124,24 +135,33 @@ namespace RPGEE
             }
         }
 
+        /** Method to handle resize events */
         public void OnResize(object sender, EventArgs e)
         {
             if (this.Parent != null)
             {
+                /* Get the padding that should be applied to center allign the height of the map
+                 * with the height of the container */
                 int deltaHeight = (this.Parent.Height - this.Height) / 2;
 
+                /* Apply the padding should the height of the container be greater than the map's height */
                 if (deltaHeight > 0)
                     this.Top = deltaHeight;
                 else if (this.Bounds.Y + this.Height < this.Parent.Height)
                     this.Top = this.Parent.Height - this.Height;
 
+                /* Get the padding that should be applied to center allign the width of the map
+                 * with the width of the container */
                 int deltaWidth = (this.Parent.Width - this.Width) / 2;
 
+                /* Apply the padding should the width of the container be greater than the map's width */
                 if (deltaWidth > 0)
                     this.Left = deltaWidth;
                 else if (this.Bounds.X + this.Width < this.Parent.Width)
                     this.Left = this.Parent.Width - this.Width;
 
+                /* Should the container be resized to something small, make sure that the map is anchored
+                 * to the top left position */
                 if (this.Top > 0 && (this.Parent.Height < this.Height))
                     this.Top = 0;
                 if (this.Left > 0 && (this.Parent.Width < this.Width))
