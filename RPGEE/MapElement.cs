@@ -23,7 +23,6 @@ namespace RPGEE
         /* Private fields */
         protected int ID { get; }
         protected int opacity;
-
         private readonly List<MapElement> ElementList;
 
         public MapElement(Image map, List<MapElement> list)
@@ -41,10 +40,22 @@ namespace RPGEE
             list.Add(this);
         }
 
+        /* List operations. Index handling and find() */
+        #region listOperations
+
         /** Public function to return a given Zone's list index based upon it's ID */
         public int getListIndex()
         {
             return ElementList.FindIndex(FindByID(this.ID));
+        }
+
+        /** Private helper method to sort out Zones by ID */
+        private static Predicate<MapElement> FindByID(int ID)
+        {
+            return delegate (MapElement element)
+            {
+                return element.ID == ID;
+            };
         }
 
         /** Public function to remove the current Map Element from the list of available elements */
@@ -75,6 +86,16 @@ namespace RPGEE
 
             RpgEE.map.renderMap();
         }
+        #endregion
+
+        /* Helper methods to set/unset Data Points */
+        #region dataPoints
+
+        /** Public method to retrieve the selection status of a given point in the DataMap */
+        public abstract bool isPointSelected(Point pt);
+
+        /** Public method to set a given Point of Data as selected in the DataMap */
+        protected abstract void setDataPoint(Point pt, int x);
 
         /** Public method to set a specific Point's Zone data to true */
         public void addPoint(Graphics graphics, Point pt)
@@ -83,6 +104,9 @@ namespace RPGEE
             setDataPoint(pt, 1);
         }
 
+        /** Protected helper method to handle drawing to a MapElement's Image */
+        protected abstract void drawPointHelper(Graphics graphics, Point pt);
+
         /** Public method to un-set a specific Point's Zone data, reverting it back to false */
         public void removePoint(Graphics graphics, Point pt)
         {
@@ -90,9 +114,12 @@ namespace RPGEE
             setDataPoint(pt, 0);
         }
 
-        protected abstract void drawPointHelper(Graphics graphics, Point pt);
         protected abstract void removePointHelper(Graphics graphics, Point pt);
-        protected abstract void setDataPoint(Point pt, int x);
+
+        #endregion
+
+        /* Helper methods to change background of selection */
+        #region backgroundColor
 
         /** Public method to select a given Zone
          * It turns the background behind the Label blue (when selected) */
@@ -108,7 +135,10 @@ namespace RPGEE
             selectorHelper(Color.Transparent);
         }
 
-        public abstract bool isPointSelected(Point pt);
+        #endregion
+
+        /* Helper methods for brush Color changes */
+        #region brushColor
 
         /** Public method to change the Zone's Brush's color
          * It updates also the BackColor of the Zone's color selector button */
@@ -128,6 +158,7 @@ namespace RPGEE
             updateElementColor(transparentColor);
         }
 
+        /** Protected method invoked to change the color of all points coloured in the Image */
         protected abstract void updateElementColor(Color newColor);
 
         /** Private helper method to toggle Background colors of selectors
@@ -142,15 +173,10 @@ namespace RPGEE
             RpgEE.sideNavListView.Update();
         }
 
-        /** Private helper method to sort out Zones by ID */
-        private static Predicate<MapElement> FindByID(int ID)
-        {
-            return delegate (MapElement element)
-            {
-                return element.ID == ID;
-            };
-        }
+        #endregion
 
+        /* Generic helper methods */
+        #region helperMethods
         /** Helper method to erase a region (the size of a square blockSize) from a given zone's image
          * It iterates and removes every single pixel */
         protected void removeBitmapRegion(Point pt)
@@ -160,11 +186,13 @@ namespace RPGEE
                     (Image as Bitmap).SetPixel(pt.X + i, pt.Y + j, Color.Empty);
         }
 
+        /** Helper method to generate a default name for the object */
         protected String defaultName()
         {
             return this.Type + this.ID;
         }
 
+        /** Helper method to handle object addition to the sideNav's Menu */
         protected void addToGenerator()
         {
             /* Add the newly created element to the mapList's sideNav */
@@ -177,6 +205,8 @@ namespace RPGEE
             /* If opacity is != from 255 it is semi-transparent */
             return Color.FromArgb(opacity, RpgEE.RandomGenerator.Next(256), RpgEE.RandomGenerator.Next(256), RpgEE.RandomGenerator.Next(256));
         }
+
+        #endregion
     }
 
     public class MapPoint : MapElement
@@ -196,6 +226,12 @@ namespace RPGEE
             this.addToGenerator();
         }
 
+        /* Asbtract methods overriden by concrete class implementation */
+        #region overrideAbstract
+
+        /** Helper method to set a given point's Data in the Object's DataMap
+         * Because MapPoints store one point only, we update the point's position and accordingly set its value
+         * to true or false */
         override
         protected void setDataPoint(Point pt, int x)
         {
@@ -206,30 +242,44 @@ namespace RPGEE
                 isPositionSet = true;
         }
 
+        /** Helper method to determine if the given point is the MapPoint's selected point */
         override
         public bool isPointSelected(Point pt)
         {
             return pt.Equals(Position) && isPositionSet;
         }
 
+        /** Helper method to update the point's color */
         override
         protected void updateElementColor(Color newColor)
         {
+            /* Erase the previously selected Point */
             RpgEE.map.erasePointNoRender(Position);
+
+            /* Draw the new point selection with the new color */
             RpgEE.map.drawPoint(Position);
         }
 
-        protected override void drawPointHelper(Graphics graphics, Point pt)
+        /** Helper method to draw a given point on the map.
+         * It handles removal of the point at the previous position */
+        override
+        protected void drawPointHelper(Graphics graphics, Point pt)
         {
             /* Remove the previously drawn point before drawing the new one */
             RpgEE.map.erasePoint(Position);
+
+            /* Points are draw as ellipses with an outer container rectangle the size of a single cell */
             graphics.FillEllipse(Brush, new Rectangle(pt, new Size(Map.blockSize, Map.blockSize)));
         }
 
-        protected override void removePointHelper(Graphics graphics, Point pt)
+        /** Helper method to remove a point from the Map */
+        override
+        protected void removePointHelper(Graphics graphics, Point pt)
         {
             removeBitmapRegion(pt);
         }
+
+        #endregion
     }
 
     public class MapZone : MapElement
@@ -258,6 +308,9 @@ namespace RPGEE
             this.addToGenerator();
         }
 
+        /* Asbtract methods overriden by concrete class implementation */
+        #region overrideAbstract
+
         /** Public method to verify if a specific point's data has already been set */
         override
         public bool isPointSelected (Point pt)
@@ -274,6 +327,8 @@ namespace RPGEE
                 Data[pt.X / Map.blockSize, pt.Y / Map.blockSize] = x;
         }
 
+        /** Private helper method to update the color of all points which are part of the Zone
+         * on the Map */
         override
         protected void updateElementColor (Color newColor)
         {
@@ -284,24 +339,31 @@ namespace RPGEE
                     Point pt = new Point(i, j);
                     if (isPointSelected(pt))
                     {
+                        /* Each point must be removed from the Bitmap and redrawn with the new color */
                         RpgEE.map.erasePointNoRender(pt);
                         RpgEE.map.drawPointNoRender(pt);
                     }
                 }
             }
+
+            /* Forccefully update the map once complete */
             RpgEE.map.renderMap();
         }
 
+        /** Private helper to draw a new Point, part of a Zone's region */
         override
         protected void drawPointHelper(Graphics graphics, Point pt)
         {
             graphics.FillRectangle(Brush, new Rectangle(pt, new Size(Map.blockSize, Map.blockSize)));
         }
 
+        /** Private helper to remove a point from a Zone's rendered region */
         override
         protected void removePointHelper(Graphics graphics, Point pt)
         {
             removeBitmapRegion(pt);
         }
+
+        #endregion
     }
 }
