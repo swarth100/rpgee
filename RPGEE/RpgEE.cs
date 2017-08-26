@@ -58,7 +58,7 @@ namespace RPGEE
         private readonly Button optionsBtn;
 
         private readonly Button backBtn;
-        private readonly Label topLbl;
+        private static Label topLbl;
 
         /** Map Screen UI Components
          *  Initialised within RpgEE() Constructor
@@ -76,6 +76,11 @@ namespace RPGEE
         private readonly Button newMapBtn;
         private readonly Button newPinMapBtn;
         private readonly Button deleteMapBtn;
+
+        /** Area Screen UI Components
+         *  Initialised within RpgEE() Constructor
+         */
+        private static TableLayoutPanel areaTable;
 
         /* General structures and data */
         private Thread connectionThread;
@@ -224,6 +229,12 @@ namespace RPGEE
 
             #endregion
 
+            #region areaLayout
+
+            areaTable = Generator<TableLayoutPanel>.generateGeneralTable(this);
+
+            #endregion
+
             /* Spawn computations thread, set it to background and run it */
             computationThread = new Thread(BackgroundThread.runComputationsThread);
             computationThread.IsBackground = true;
@@ -340,8 +351,18 @@ namespace RPGEE
                     break;
                 case Layers.Map:
                     RpgEE.UpdateLayer(RpgEEForm, mapTable, true);
+                    updateTopLabel("Map");
+                    break;
+                case Layers.Areas:
+                    RpgEE.UpdateLayer(RpgEEForm, areaTable, true);
+                    updateTopLabel("Area");
                     break;
             }
+        }
+
+        private static void updateTopLabel(String name)
+        {
+            topLbl.Text = "RpgEE - " + name + " View";
         }
         #endregion
 
