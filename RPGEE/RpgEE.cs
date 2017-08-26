@@ -57,8 +57,8 @@ namespace RPGEE
         private readonly Button spritesBtn;
         private readonly Button optionsBtn;
 
-        private readonly Button backBtn;
-        private static Label topLbl;
+        public static Button backBtn;
+        public static Label topLbl;
 
         /** Map Screen UI Components
          *  Initialised within RpgEE() Constructor
@@ -150,7 +150,10 @@ namespace RPGEE
             mapBtn.Click += this.mapBtn_Click;
 
             playersBtn = Generator<Button>.addObject(new Button() { Text = "Players" }, homeTable, 1, 0);
+
             areaBtn = Generator<Button>.addObject(new Button() { Text = "Area" }, homeTable, 2, 0);
+            areaBtn.Click += this.areaBtn_Click;
+
             rulesBtn = Generator<Button>.addObject(new Button() { Text = "Rules" }, homeTable, 0, 1);
             spritesBtn = Generator<Button>.addObject(new Button() { Text = "Sprites" }, homeTable, 1, 1);
             optionsBtn = Generator<Button>.addObject(new Button() { Text = "Options" }, homeTable, 2, 1);
@@ -222,11 +225,6 @@ namespace RPGEE
             /* Select moveButton as default */
             moveMapBtn_Click(moveMapBtn, null);
 
-            /* Generate the rest of the UI components */
-            Generator<Button>.addObject(backBtn, mapTable, 0, 0);
-
-            Generator<Label>.addObject(topLbl, mapTable, 1, 0);
-
             #endregion
 
             #region areaLayout
@@ -268,6 +266,11 @@ namespace RPGEE
         void mapBtn_Click(object sender, EventArgs e)
         {
             RpgEE.showScreen(Layers.Map);
+        }
+
+        void areaBtn_Click(object sender, EventArgs e)
+        {
+            RpgEE.showScreen(Layers.Areas);
         }
 
         void backBtn_Click(object sender, EventArgs e)
@@ -341,6 +344,8 @@ namespace RPGEE
                 RpgEE.UpdateLayer(RpgEEForm, currentScreen, false);
             }
 
+            TableLayoutPanel curPanel = null;
+
             switch(newScreen)
             {
                 case Layers.Login:
@@ -352,11 +357,23 @@ namespace RPGEE
                 case Layers.Map:
                     RpgEE.UpdateLayer(RpgEEForm, mapTable, true);
                     updateTopLabel("Map");
+                    curPanel = mapTable;
                     break;
                 case Layers.Areas:
                     RpgEE.UpdateLayer(RpgEEForm, areaTable, true);
                     updateTopLabel("Area");
+                    curPanel = areaTable;
                     break;
+                default:
+                    break;
+            }
+
+            /* Generate the default Table UI components */
+            if (curPanel != null)
+            {
+                Generator<Button>.addObject(backBtn, curPanel, 0, 0);
+
+                Generator<Label>.addObject(topLbl, curPanel, 1, 0);
             }
         }
 
