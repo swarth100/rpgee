@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using PlayerIOClient;
 using EEPhysics;
+using System.Drawing;
 
 namespace RPGEE
 {
@@ -15,6 +16,7 @@ namespace RPGEE
         {
             None,
             RenderMap,
+            RenderMapPoint,
             InitParse,
         }
 
@@ -41,7 +43,7 @@ namespace RPGEE
         public static Object _activityLock = new Object();
 
         /* RoomData object */
-        public static uint[,,] roomData;
+        public static int[,,] roomData;
         public static Object _roomDataLock = new Object();
         public static int width = 0;
         public static int height = 0;
@@ -100,7 +102,7 @@ namespace RPGEE
                              * https://gist.github.com/Yonom/3c9ebfe69b1432452f9b */
                             lock (_roomDataLock)
                             {
-                                roomData = new uint[2, e.GetInt(18), e.GetInt(19)];
+                                roomData = new int[2, e.GetInt(18), e.GetInt(19)];
 
                                 /* Initialise width end height fields */
                                 width = e.GetInt(18);
@@ -110,12 +112,27 @@ namespace RPGEE
                                 DataChunk[] chunks = InitParse.Parse(e);
                                 foreach (var chunk in chunks)
                                     foreach (var pos in chunk.Locations)
-                                        roomData[chunk.Layer, pos.X, pos.Y] = chunk.Type;
+                                        roomData[chunk.Layer, pos.X, pos.Y] = (int) chunk.Type;
                             }
 
                             /* Force initial map async rendering */
                             RpgEE.map.loadMap();
 
+                            break;
+                        case Actions.RenderMapPoint:
+                            /* Cast data back to message type */
+                            Message m = (Message)activity.data;
+                            Point pt;
+
+                            lock (_roomDataLock)
+                            {
+                                int layer = m.GetInt(0);
+                                int blockID = m.GetInt(3);
+                                pt = new Point(m.GetInt(1), m.GetInt(2));
+                                roomData[layer, pt.X, pt.Y] = blockID;
+                            }
+
+                            RpgEE.map.drawMapPoint(pt);
                             break;
                     }
                 }
@@ -199,6 +216,13 @@ namespace RPGEE
                                 break;
                             case "m":
                                 /* Movement */
+                                break;
+                            case "b":
+                                /* Block Placement */
+                                lock (_activityLock)
+                                {
+                                    activityQueue.Enqueue(new ActionEvent(Actions.RenderMapPoint, m));
+                                }
                                 break;
                             case "say":
                                 /* Messages */

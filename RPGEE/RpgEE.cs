@@ -57,6 +57,9 @@ namespace RPGEE
         private readonly Button spritesBtn;
         private readonly Button optionsBtn;
 
+        public static Button backBtn;
+        public static Label topLbl;
+
         /** Map Screen UI Components
          *  Initialised within RpgEE() Constructor
          */
@@ -73,8 +76,11 @@ namespace RPGEE
         private readonly Button newMapBtn;
         private readonly Button newPinMapBtn;
         private readonly Button deleteMapBtn;
-        private readonly Button backBtn;
-        private readonly Button topBtn;
+
+        /** Area Screen UI Components
+         *  Initialised within RpgEE() Constructor
+         */
+        private static TableLayoutPanel areaTable;
 
         /* General structures and data */
         private Thread connectionThread;
@@ -117,7 +123,7 @@ namespace RPGEE
 
             /* Login button */
             loginBtn = Generator<Button>.addObject(new Button() { Text = "login" }, loginTable, 1, 6);
-            loginBtn.Click += new System.EventHandler(this.loginBtn_Click);
+            loginBtn.Click += this.loginBtn_Click;
 
             #endregion
 
@@ -141,13 +147,22 @@ namespace RPGEE
 
             /* Map button */
             mapBtn = Generator<Button>.addObject(new Button() { Text = "Map" }, homeTable, 0, 0);
-            mapBtn.Click += new System.EventHandler(this.mapBtn_Click);
+            mapBtn.Click += this.mapBtn_Click;
 
             playersBtn = Generator<Button>.addObject(new Button() { Text = "Players" }, homeTable, 1, 0);
+
             areaBtn = Generator<Button>.addObject(new Button() { Text = "Area" }, homeTable, 2, 0);
+            areaBtn.Click += this.areaBtn_Click;
+
             rulesBtn = Generator<Button>.addObject(new Button() { Text = "Rules" }, homeTable, 0, 1);
             spritesBtn = Generator<Button>.addObject(new Button() { Text = "Sprites" }, homeTable, 1, 1);
             optionsBtn = Generator<Button>.addObject(new Button() { Text = "Options" }, homeTable, 2, 1);
+
+            /* General UI components */
+            backBtn = new Button() { Text = "Back" };
+            backBtn.Click += backBtn_Click;
+
+            topLbl = new Label() { Text = "RpgEE", TextAlign = ContentAlignment.MiddleCenter };
 
             #endregion
 
@@ -210,9 +225,11 @@ namespace RPGEE
             /* Select moveButton as default */
             moveMapBtn_Click(moveMapBtn, null);
 
-            /* Temporary button placeholders */
-            backBtn = Generator<Button>.addObject(new Button() { Text = "Back" }, mapTable, 0, 0);
-            topBtn = Generator<Button>.addObject(new Button() { Text = "RpgEE" }, mapTable, 1, 0);
+            #endregion
+
+            #region areaLayout
+
+            areaTable = Generator<TableLayoutPanel>.generateGeneralTable(this);
 
             #endregion
 
@@ -249,6 +266,16 @@ namespace RPGEE
         void mapBtn_Click(object sender, EventArgs e)
         {
             RpgEE.showScreen(Layers.Map);
+        }
+
+        void areaBtn_Click(object sender, EventArgs e)
+        {
+            RpgEE.showScreen(Layers.Areas);
+        }
+
+        void backBtn_Click(object sender, EventArgs e)
+        {
+            RpgEE.showScreen(Layers.Home);
         }
 
         void moveMapBtn_Click(object sender, EventArgs e)
@@ -317,6 +344,8 @@ namespace RPGEE
                 RpgEE.UpdateLayer(RpgEEForm, currentScreen, false);
             }
 
+            TableLayoutPanel curPanel = null;
+
             switch(newScreen)
             {
                 case Layers.Login:
@@ -327,8 +356,30 @@ namespace RPGEE
                     break;
                 case Layers.Map:
                     RpgEE.UpdateLayer(RpgEEForm, mapTable, true);
+                    updateTopLabel("Map");
+                    curPanel = mapTable;
+                    break;
+                case Layers.Areas:
+                    RpgEE.UpdateLayer(RpgEEForm, areaTable, true);
+                    updateTopLabel("Area");
+                    curPanel = areaTable;
+                    break;
+                default:
                     break;
             }
+
+            /* Generate the default Table UI components */
+            if (curPanel != null)
+            {
+                Generator<Button>.addObject(backBtn, curPanel, 0, 0);
+
+                Generator<Label>.addObject(topLbl, curPanel, 1, 0);
+            }
+        }
+
+        private static void updateTopLabel(String name)
+        {
+            topLbl.Text = "RpgEE - " + name + " View";
         }
         #endregion
 
