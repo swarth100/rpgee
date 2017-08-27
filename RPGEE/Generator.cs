@@ -20,7 +20,7 @@ namespace RPGEE
         private static TableLayoutPanel generateTable(Action<TableLayoutPanel, int> rowFunc, Action<TableLayoutPanel, int> colFunc, int rows, int cols)
         {
             /* Initialises the table and row/column spacing */
-            TableLayoutPanel layoutTable = new TableLayoutPanel();
+            TableLayoutPanel layoutTable = new TableLayoutPanel() { Margin = new Padding(0) };
             layoutTable.ColumnCount = cols;
             for (int i = 0; i < cols; i++)
             {
@@ -250,7 +250,7 @@ namespace RPGEE
         public static PictureBox addDraggablePictureBox(DraggablePictureBox obj, TableLayoutPanel table, int row, int col)
         {
             /* Generates a new sub level TableLayoutPanel */
-            TableLayoutPanel mapHelper = Generator<TableLayoutPanel>.addObject(new TableLayoutPanel() , table, 2, 1);
+            TableLayoutPanel mapHelper = Generator<TableLayoutPanel>.addObject(new TableLayoutPanel(), table, 2, 1);
 
             /* The table layout panel is just a placeholder, as it enforces no layout */
             mapHelper.Visible = true;
@@ -274,6 +274,18 @@ namespace RPGEE
             btn.Click += delegate (object sender, EventArgs e)
             {
                 RpgEE.map.changeMapStatus(status, sender as Control);
+            };
+
+            return btn;
+        }
+
+        public static Button addHomeButton(Button btn, TableLayoutPanel table, int row, int col, RpgEE.Layers layer)
+        {
+            btn = Generator<Button>.addObject(btn, table, row, col);
+
+            btn.Click += delegate (object sender, EventArgs e)
+            {
+                RpgEE.showScreen(layer);
             };
 
             return btn;
