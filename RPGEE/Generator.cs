@@ -11,6 +11,9 @@ namespace RPGEE
     class Generator<T> where T : Control
     {
 
+        private static int buttonDimensions = 50;
+        private static int sideNavDimensions = 250;
+
         #region privateTableGenerators
         /** Private layout table generator.
          * Receives a row and column formatter functions, a containner form and numbers for rows and columns.
@@ -121,7 +124,7 @@ namespace RPGEE
             switch (i)
             {
                 case 0:
-                    value = 250;
+                    value = sideNavDimensions;
                     layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, value));
                     break;
                 default:
@@ -140,10 +143,38 @@ namespace RPGEE
                 case 0:
                     break;
                 case 1:
-                    value = 50;
+                    value = buttonDimensions;
                     layout.RowStyles.Add(new RowStyle(SizeType.Absolute, value));
                     break;
             }
+        }
+
+        #endregion
+
+        #region rightSideNavTable
+
+        /** Private helper function for a general component's table column generation
+         *  */
+        private static void generateRightSideNavTableHelperCols(TableLayoutPanel layout, int i)
+        {
+            System.Single value;
+            switch (i)
+            {
+                case 1:
+                    value = sideNavDimensions;
+                    layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, value));
+                    break;
+                default:
+                    layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+                    break;
+            }
+        }
+
+        /** Private helper function for a general component's table row generation
+         *  */
+        private static void generateRightSideNavTableHelperRows(TableLayoutPanel layout, int i)
+        {
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         }
 
         #endregion
@@ -225,6 +256,11 @@ namespace RPGEE
         public static TableLayoutPanel generateSideTable(int rows, int cols)
         {
             return generateTable(generateSideTableHelperRows, generateSideTableHelperCols, rows, cols);
+        }
+
+        public static TableLayoutPanel generateRightSideTable()
+        {
+            return generateTable(generateRightSideNavTableHelperRows, generateRightSideNavTableHelperCols, 1, 2);
         }
 
         public static TableLayoutPanel generateButtonTable(int rows, int cols)
