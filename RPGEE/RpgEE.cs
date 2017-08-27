@@ -23,7 +23,7 @@ namespace RPGEE
             Areas,
             Game,
             Sprites,
-            Custom
+            Options
         }
 
         /* Public elements */
@@ -36,9 +36,7 @@ namespace RPGEE
         public static Random RandomGenerator = new Random();
         public static int ZoneID = 0;
 
-        /** Login Screen UI Components
-         *  Initialised within RpgEE() Constructor
-         */
+        /* Login Screen UI Components Initialised within RpgEE() Constructor */
         private static TableLayoutPanel loginTable;
         private readonly Label loginLbl;
         private readonly TextBox usernameTxt;
@@ -46,23 +44,19 @@ namespace RPGEE
         private readonly TextBox roomIDTxt;
         private readonly Button loginBtn;
 
-        /** Home Screen UI Components
-         *  Initialised within RpgEE() Constructor
-         */
+        /* Home Screen UI Components Initialised within RpgEE() Constructor */
         private static TableLayoutPanel homeTable;
         private readonly Button mapBtn;
         private readonly Button playersBtn;
         private readonly Button areaBtn;
-        private readonly Button rulesBtn;
+        private readonly Button gameBtn;
         private readonly Button spritesBtn;
         private readonly Button optionsBtn;
 
         public static Button backBtn;
         public static Label topLbl;
 
-        /** Map Screen UI Components
-         *  Initialised within RpgEE() Constructor
-         */
+        /* Map Screen UI Components Initialised within RpgEE() Constructor */
         private static TableLayoutPanel mapTable;
         private readonly TableLayoutPanel sideNavTable;
         public static ListViewEx sideNavListView;
@@ -77,10 +71,20 @@ namespace RPGEE
         private readonly Button newPinMapBtn;
         private readonly Button deleteMapBtn;
 
-        /** Area Screen UI Components
-         *  Initialised within RpgEE() Constructor
-         */
+        /* Area Screen UI Components Initialised within RpgEE() Constructor */
         private static TableLayoutPanel areaTable;
+
+        /* Game Screen UI Components Initialised within RpgEE() Constructor */
+        private static TableLayoutPanel gameTable;
+
+        /* Sprites Screen UI Components Initialised within RpgEE() Constructor */
+        private static TableLayoutPanel spritesTable;
+
+        /* Player Screen UI Components Initialised within RpgEE() Constructor */
+        private static TableLayoutPanel playerTable;
+
+        /* Custom Screen UI Components Initialised within RpgEE() Constructor */
+        private static TableLayoutPanel customTable;
 
         /* General structures and data */
         private Thread connectionThread;
@@ -91,7 +95,7 @@ namespace RPGEE
         public RpgEE()
         {
             this.Text = "RpgEE";
-            this.Size = new Size(650, 450);
+            this.Size = new Size(850, 550);
             RpgEEForm = this;
 
             #region loginLayout
@@ -146,17 +150,12 @@ namespace RPGEE
             homeTable = Generator<TableLayoutPanel>.generateHomeTable(this, 2, 3);
 
             /* Map button */
-            mapBtn = Generator<Button>.addObject(new Button() { Text = "Map" }, homeTable, 0, 0);
-            mapBtn.Click += this.mapBtn_Click;
-
-            playersBtn = Generator<Button>.addObject(new Button() { Text = "Players" }, homeTable, 1, 0);
-
-            areaBtn = Generator<Button>.addObject(new Button() { Text = "Area" }, homeTable, 2, 0);
-            areaBtn.Click += this.areaBtn_Click;
-
-            rulesBtn = Generator<Button>.addObject(new Button() { Text = "Rules" }, homeTable, 0, 1);
-            spritesBtn = Generator<Button>.addObject(new Button() { Text = "Sprites" }, homeTable, 1, 1);
-            optionsBtn = Generator<Button>.addObject(new Button() { Text = "Options" }, homeTable, 2, 1);
+            mapBtn = Generator<Button>.addHomeButton(new Button() { Text = "Map" }, homeTable, 0, 0, Layers.Map);
+            playersBtn = Generator<Button>.addHomeButton(new Button() { Text = "Players" }, homeTable, 1, 0, Layers.Players);
+            areaBtn = Generator<Button>.addHomeButton(new Button() { Text = "Area" }, homeTable, 2, 0, Layers.Areas);
+            gameBtn = Generator<Button>.addHomeButton(new Button() { Text = "Rules" }, homeTable, 0, 1, Layers.Game);
+            spritesBtn = Generator<Button>.addHomeButton(new Button() { Text = "Sprites" }, homeTable, 1, 1, Layers.Sprites);
+            optionsBtn = Generator<Button>.addHomeButton(new Button() { Text = "Options" }, homeTable, 2, 1, Layers.Options);
 
             /* General UI components */
             backBtn = new Button() { Text = "Back" };
@@ -233,13 +232,62 @@ namespace RPGEE
 
             #endregion
 
+            #region gameLayout
+
+            gameTable = Generator<TableLayoutPanel>.generateGeneralTable(this);
+
+            #endregion
+
+            #region spritesLayout
+
+            spritesTable = Generator<TableLayoutPanel>.generateGeneralTable(this);
+
+            TableLayoutPanel leftSpritesTable = Generator<TableLayoutPanel>.generateSideTable(2, 1);
+            Generator<TableLayoutPanel>.addObject(leftSpritesTable, spritesTable, 0, 1);
+
+            TableLayoutPanel leftSpritesBtnTable = Generator<TableLayoutPanel>.generateButtonTable(1, 5);
+            Generator<TableLayoutPanel>.addObject(leftSpritesBtnTable, leftSpritesTable, 0, 1);
+
+            TableLayoutPanel tableSplitter = Generator<TableLayoutPanel>.generateRightSideTable();
+            Generator<TableLayoutPanel>.addObject(tableSplitter, spritesTable, 1, 1);
+
+            TableLayoutPanel rightSpritesTable = Generator<TableLayoutPanel>.generateSideTable(2, 1);
+            Generator<TableLayoutPanel>.addObject(rightSpritesTable, tableSplitter, 1, 0);
+
+            TableLayoutPanel rightSpritesBtnTable = Generator<TableLayoutPanel>.generateButtonTable(1, 5);
+            Generator<TableLayoutPanel>.addObject(rightSpritesBtnTable, rightSpritesTable, 0, 1);
+
+
+            /* Temporary button placeholders */
+            Button btn1= Generator<Button>.addObject(new Button() { Text = "1" }, leftSpritesTable, 0, 0);
+            Button btn2 = Generator<Button>.addObject(new Button() { Text = "2" }, leftSpritesBtnTable, 0, 0);
+            Button btn3 = Generator<Button>.addObject(new Button() { Text = "3" }, leftSpritesBtnTable, 1, 0);
+            Button btn4 = Generator<Button>.addObject(new Button() { Text = "4" }, tableSplitter, 0, 0);
+            Button btn5 = Generator<Button>.addObject(new Button() { Text = "5" }, rightSpritesTable, 0, 0);
+            Button btn6 = Generator<Button>.addObject(new Button() { Text = "6" }, rightSpritesBtnTable, 0, 0);
+            Button btn7 = Generator<Button>.addObject(new Button() { Text = "7" }, rightSpritesBtnTable, 1, 0);
+
+            #endregion
+
+            #region playerLayout
+
+            playerTable = Generator<TableLayoutPanel>.generateGeneralTable(this);
+
+            #endregion
+
+            #region customLayout
+
+            customTable = Generator<TableLayoutPanel>.generateGeneralTable(this);
+
+            #endregion
+
             /* Spawn computations thread, set it to background and run it */
             computationThread = new Thread(BackgroundThread.runComputationsThread);
             computationThread.IsBackground = true;
             computationThread.Start();
 
             /* Debug */
-            // RpgEE.showScreen(Layers.Home);
+             RpgEE.showScreen(Layers.Home);
         }
 
         #region btnClicks
@@ -263,16 +311,6 @@ namespace RPGEE
 
         /** Map btn click handler
          * When fired changes the layout to the map appropriate one */
-        void mapBtn_Click(object sender, EventArgs e)
-        {
-            RpgEE.showScreen(Layers.Map);
-        }
-
-        void areaBtn_Click(object sender, EventArgs e)
-        {
-            RpgEE.showScreen(Layers.Areas);
-        }
-
         void backBtn_Click(object sender, EventArgs e)
         {
             RpgEE.showScreen(Layers.Home);
@@ -331,7 +369,6 @@ namespace RPGEE
             {
                 /* Changing a panel's visibility status must also update the currentScreen panel */
                 panel.Visible = status;
-                currentScreen = panel;
             }
         }
 
@@ -344,42 +381,53 @@ namespace RPGEE
                 RpgEE.UpdateLayer(RpgEEForm, currentScreen, false);
             }
 
-            TableLayoutPanel curPanel = null;
-
             switch(newScreen)
             {
                 case Layers.Login:
-                    RpgEE.UpdateLayer(RpgEEForm, loginTable, true);
+                    currentScreen = loginTable;
                     break;
                 case Layers.Home:
-                    RpgEE.UpdateLayer(RpgEEForm, homeTable, true);
+                    currentScreen = homeTable;
                     break;
                 case Layers.Map:
-                    RpgEE.UpdateLayer(RpgEEForm, mapTable, true);
-                    updateTopLabel("Map");
-                    curPanel = mapTable;
+                    currentScreen = mapTable;
+                    initialiseGeneralEmenets("Map");
                     break;
                 case Layers.Areas:
-                    RpgEE.UpdateLayer(RpgEEForm, areaTable, true);
-                    updateTopLabel("Area");
-                    curPanel = areaTable;
+                    currentScreen = areaTable;
+                    initialiseGeneralEmenets("Area");
+                    break;
+                case Layers.Game:
+                    currentScreen = gameTable;
+                    initialiseGeneralEmenets("Game");
+                    break;
+                case Layers.Sprites:
+                    currentScreen = spritesTable;
+                    initialiseGeneralEmenets("Sprites");
+                    break;
+                case Layers.Players:
+                    currentScreen = playerTable;
+                    initialiseGeneralEmenets("Players");
+                    break;
+                case Layers.Options:
+                    currentScreen = customTable;
+                    initialiseGeneralEmenets("Custom");
                     break;
                 default:
                     break;
             }
 
-            /* Generate the default Table UI components */
-            if (curPanel != null)
-            {
-                Generator<Button>.addObject(backBtn, curPanel, 0, 0);
-
-                Generator<Label>.addObject(topLbl, curPanel, 1, 0);
-            }
+            RpgEE.UpdateLayer(RpgEEForm, currentScreen, true);
         }
 
-        private static void updateTopLabel(String name)
+        private static void initialiseGeneralEmenets(String name)
         {
             topLbl.Text = "RpgEE - " + name + " View";
+
+            /* Generate the default Table UI components */
+            Generator<Button>.addObject(backBtn, currentScreen, 0, 0);
+
+            Generator<Label>.addObject(topLbl, currentScreen, 1, 0);
         }
         #endregion
 
